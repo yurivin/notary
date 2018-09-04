@@ -6,9 +6,10 @@ services:
     container_name: d3-parity-mainnet
     expose:
       - 8545
-      - 30313
-      - 30313/udp
-      - 8190
+      - 8180
+    ports:
+      - 30303
+      - 30303/udp
     volumes:
       - /opt/parity/mainnet:/data
     command: >
@@ -23,8 +24,9 @@ services:
     image: hyperledger/iroha:develop
     container_name: d3-iroha
     expose:
-      - 50051:50051
-     - 10001:10001
+      - 50051
+    ports:
+      - 10001
     depends_on:
       - d3-iroha-postgres
     tty: true
@@ -62,7 +64,7 @@ services:
     depends_on:
       - d3-iroha
     expose:
-      - 8083:8083
+      - 8083
 
   d3-notary:
     build:
@@ -89,20 +91,25 @@ services:
     depends_on:
       - d3-iroha
     expose:
-      - 8080
+      - 8081:8080
     entrypoint:
       - grpcwebproxy
       - --backend_addr=d3-iroha:50051
       - --run_tls_server=false
+    environment:
+      - VIRTUAL_HOST=grpcwebproxy.d3-node-1.stage.soramitsu.co.jp
+      - VIRTUAL_PORT=8081
+      - LETSENCRYPT_HOST=grpcwebproxy.d3-node-1.stage.soramitsu.co.jp
+      - LETSENCRYPT_EMAIL=admin@soramitsu.co.jp
 
   # WEBAPP!!
 
   nginx-proxy:
     image: jwilder/nginx-proxy
-    container_name: parity-nginx-proxy
+    container_name: nginx-proxy
     ports:
-      - 80:80
-      - 443:443
+      - 80
+      - 443
     volumes:
       - /var/nginx/conf.d:/etc/nginx/conf.d
       - /var/nginx/vhost.d:/etc/nginx/vhost.d
