@@ -72,7 +72,7 @@ class EthChainHandler(
                     wallets[to]!!,
                     // all non-existent keys were filtered out in parseBlock
                     tokens[tx.to]!!.name,
-                    BigDecimal(amount, tokens[tx.to]!!.precision).toString(),
+                    BigDecimal(amount, tokens[tx.to]!!.precision).toPlainString(),
                     from
                 )
             }

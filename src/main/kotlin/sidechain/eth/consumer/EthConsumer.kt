@@ -6,6 +6,7 @@ import mu.KLogging
 import org.web3j.utils.Numeric
 import sidechain.eth.util.DeployHelper
 import withdrawalservice.WithdrawalServiceOutputEvent
+import java.math.BigDecimal
 import java.math.BigInteger
 
 class EthConsumer(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPasswords) {
@@ -31,9 +32,12 @@ class EthConsumer(ethereumConfig: EthereumConfig, ethereumPasswords: EthereumPas
                 deployHelper.gasLimit
             )
 
+            val n = BigDecimal(event.proof.amount)
+            val new_amount = n.scaleByPowerOfTen(18)
+
             relay.withdraw(
                 event.proof.tokenContractAddress,
-                BigInteger(event.proof.amount),
+                BigInteger(new_amount.toPlainString()),
                 event.proof.account,
                 Numeric.hexStringToByteArray(event.proof.irohaHash),
                 event.proof.v,

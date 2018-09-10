@@ -10,6 +10,7 @@ import iroha.protocol.TransactionOuterClass.Transaction
 import jp.co.soramitsu.iroha.Keypair
 import mu.KLogging
 import org.web3j.crypto.ECKeyPair
+import provider.eth.EthTokenInfo
 import provider.eth.EthTokensProvider
 import sidechain.eth.util.DeployHelper
 import sidechain.eth.util.findInTokens
@@ -18,6 +19,8 @@ import sidechain.eth.util.signUserData
 import sidechain.iroha.consumer.IrohaNetwork
 import sidechain.iroha.util.ModelUtil
 import sidechain.iroha.util.getAccountDetails
+import java.math.BigDecimal
+import java.math.BigInteger
 
 class NotaryException(reason: String) : Exception(reason)
 
@@ -126,10 +129,13 @@ class EthRefundStrategyImpl(
     private fun makeRefund(ethRefund: EthRefund): Result<EthNotaryResponse, Exception> {
         logger.info { "Make refund. Address: ${ethRefund.address}, amount: ${ethRefund.amount} ${ethRefund.assetId}, hash: ${ethRefund.irohaTxHash}" }
         return Result.of {
+            //tokensProvider.getTokens().fold({  }, { ex -> throw ex })
+            val n = BigDecimal(ethRefund.amount)
+            val new_amount = n.scaleByPowerOfTen(18)
             val finalHash =
                 hashToWithdraw(
                     ethRefund.assetId,
-                    ethRefund.amount,
+                    new_amount.toPlainString(),
                     ethRefund.address,
                     ethRefund.irohaTxHash
                 )

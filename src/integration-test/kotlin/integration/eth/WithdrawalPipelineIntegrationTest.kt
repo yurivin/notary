@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import util.getRandomString
+import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.test.assertEquals
 
@@ -77,7 +78,7 @@ class WithdrawalPipelineIntegrationTest {
         integrationHelper.deployRelays(1)
 
         // make sure master has enough assets
-        integrationHelper.sendEth(BigInteger.valueOf(125), integrationHelper.masterContract.contractAddress)
+        integrationHelper.sendEth(BigInteger("1251400000000"), integrationHelper.masterContract.contractAddress)
 
         // register client
         val res = integrationHelper.sendRegistrationRequest(clientName, keypair.publicKey(), registrationConfig.port)
@@ -86,8 +87,9 @@ class WithdrawalPipelineIntegrationTest {
         integrationHelper.setWhitelist(clientId, listOf(toAddress))
 
         val initialBalance = integrationHelper.getEthBalance(toAddress)
+        println("initial balance: " + initialBalance)
 
-        val amount = "125"
+        val amount = "0.0000012514"
         val assetId = "ether#ethereum"
 
         // add assets to user
@@ -105,12 +107,14 @@ class WithdrawalPipelineIntegrationTest {
         )
         Thread.sleep(15_000)
 
+        val n = BigDecimal(amount)
+        val new_amount = n.scaleByPowerOfTen(18)
+
         Assertions.assertEquals(
-            initialBalance + BigInteger.valueOf(amount.toLong()),
-            integrationHelper.getEthBalance(toAddress)
+            (BigDecimal(initialBalance).add(new_amount)),
+            BigDecimal(integrationHelper.getEthBalance(toAddress))
         )
     }
-
     /**
      * Full withdrawal pipeline test for ERC20 token
      * @given iroha and withdrawal services are running, free relays available, user account has 125 OMG tokens in Iroha
