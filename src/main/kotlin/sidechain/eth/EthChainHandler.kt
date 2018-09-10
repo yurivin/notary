@@ -96,7 +96,7 @@ class EthChainHandler(
                     // all non-existent keys were filtered out in parseBlock
                     wallets[tx.to]!!,
                     "ether",
-                    BigDecimal(tx.value, ETH_PRECISION).toString(),
+                    BigDecimal(tx.value, ETH_PRECISION).toPlainString(),
                     tx.from
                 )
             )
