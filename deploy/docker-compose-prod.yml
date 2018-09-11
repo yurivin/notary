@@ -107,15 +107,15 @@ services:
     container_name: d3-grpcwebproxy
     depends_on:
       - d3-iroha
-    ports:
-      - 8080:8080
+    expose:
+      - 8080
     entrypoint:
       - grpcwebproxy
       - --backend_addr=d3-iroha:50051
       - --run_tls_server=false
     environment:
       - VIRTUAL_HOST=grpcwebproxy.d3-node-1.stage.soramitsu.co.jp
-      - VIRTUAL_PORT=8081
+      - VIRTUAL_PORT=8080
       - LETSENCRYPT_HOST=grpcwebproxy.d3-node-1.stage.soramitsu.co.jp
       - LETSENCRYPT_EMAIL=admin@soramitsu.co.jp
     networks:
