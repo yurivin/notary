@@ -33,12 +33,15 @@ services:
       - d3-iroha-postgres
     tty: true
     environment:
-      - KEY=keys/node0
+      - KEY=keys/${KEY_FILE}
     entrypoint:
       - /opt/iroha_data/entrypoint.sh
     volumes:
       - iroha_block_store:/tmp/block_store
       - ./iroha:/opt/iroha_data
+    networks:
+      - etcd
+      - iroha
 
   d3-iroha-postgres:
     image: postgres:9.5
@@ -49,6 +52,8 @@ services:
       - 5432
     volumes:
       - /var/lib/postgresql/data
+    networks:
+      - iroha
 
   d3-deploy-relay:
     build:
@@ -98,11 +103,6 @@ services:
       - grpcwebproxy
       - --backend_addr=d3-iroha:50051
       - --run_tls_server=false
-    environment:
-      - VIRTUAL_HOST=grpcwebproxy.d3-node-1.stage.soramitsu.co.jp
-      - VIRTUAL_PORT=8080
-      - LETSENCRYPT_HOST=grpcwebproxy.d3-node-1.stage.soramitsu.co.jp
-      - LETSENCRYPT_EMAIL=admin@soramitsu.co.jp
 
   d3-backend:
     image: sebp/lighttpd
@@ -118,8 +118,7 @@ services:
       - LETSENCRYPT_EMAIL=admin@soramitsu.co.jp
 
   nginx-proxy:
-    #image: jwilder/nginx-proxy
-    image: jwilder/nginx-proxy:alpine
+    image: jwilder/nginx-proxy
     container_name: nginx-proxy
     ports:
       - 80:80
@@ -149,3 +148,9 @@ services:
 
 volumes:
   iroha_block_store:
+
+networks:
+  etcd:
+    external:
+      name: etcd
+  iroha:

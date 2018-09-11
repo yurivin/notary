@@ -11,13 +11,17 @@
                     "address": "d3-iroha-0:10001",
                     "peerKey": "0E2icbV/5jQmrh3Jf2lSEEA3QR/PTztzncIX9F5fyZs="
                   }
-                },
+                }
+              },
+              {
                 "addPeer": {
                   "peer": {
                     "address": "d3-iroha-1:10001",
                     "peerKey": "d3FXnaQ4C6O5MjlvBjHh9EZ+efi71M7GzhZAm1IQ8YA="
                   }
-                },
+                }
+              },
+              {
                 "addPeer": {
                   "peer": {
                     "address": "d3-iroha-2:10001",

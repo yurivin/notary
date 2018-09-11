@@ -3,8 +3,8 @@ buildscript {
     ext.ktor_version = '0.9.2'
 
     repositories {
-        mavenCentral()
         jcenter()
+        mavenCentral()
     }
     configurations.maybeCreate("pitest")
     dependencies {
@@ -29,9 +29,9 @@ mainClassName = 'notary.NotaryImpl'
 sourceCompatibility = 1.8
 
 repositories {
+    jcenter()
     mavenCentral()
     // for Ktor
-    jcenter()
     maven { url = 'https://dl.bintray.com/kotlin/ktor' }
 }
 
