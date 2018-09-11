@@ -76,6 +76,11 @@ services:
       - d3-iroha
     expose:
       - 8083
+    environment:
+      - VIRTUAL_HOST=registration.d3-node-1.stage.soramitsu.co.jp
+      - VIRTUAL_PORT=8083
+      - LETSENCRYPT_HOST=registration.d3-node-1.stage.soramitsu.co.jp
+      - LETSENCRYPT_EMAIL=admin@soramitsu.co.jp
     networks:
       - d3
 
