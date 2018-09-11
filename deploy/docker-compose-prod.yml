@@ -12,6 +12,8 @@ services:
       - 30303:30303/udp
     volumes:
       - /opt/parity/mainnet:/data
+    networks:
+      - d3
     command: >
       --db-compaction ssd
       --cache-size 4096
@@ -41,7 +43,7 @@ services:
       - ./iroha:/opt/iroha_data
     networks:
       - etcd
-      - iroha
+      - d3
 
   d3-iroha-postgres:
     image: postgres:9.5
@@ -53,7 +55,7 @@ services:
     volumes:
       - /var/lib/postgresql/data
     networks:
-      - iroha
+      - d3
 
   d3-deploy-relay:
     build:
@@ -62,6 +64,8 @@ services:
     container_name: d3-deploy-relay
     depends_on:
       - d3-iroha
+    networks:
+      - d3
 
   d3-registration:
     build:
@@ -72,6 +76,8 @@ services:
       - d3-iroha
     expose:
       - 8083
+    networks:
+      - d3
 
   d3-notary:
     build:
@@ -82,6 +88,8 @@ services:
       - d3-iroha
     expose:
       - 8080
+    networks:
+      - d3
 
   d3-withdrawal:
     build:
@@ -90,6 +98,8 @@ services:
     container_name: d3-withdrawal
     depends_on:
       - d3-iroha
+    networks:
+      - d3
 
   grpcwebproxy:
     build:
@@ -103,6 +113,13 @@ services:
       - grpcwebproxy
       - --backend_addr=d3-iroha:50051
       - --run_tls_server=false
+    environment:
+      - VIRTUAL_HOST=grpcwebproxy.d3-node-1.stage.soramitsu.co.jp
+      - VIRTUAL_PORT=8081
+      - LETSENCRYPT_HOST=grpcwebproxy.d3-node-1.stage.soramitsu.co.jp
+      - LETSENCRYPT_EMAIL=admin@soramitsu.co.jp
+    networks:
+      - d3
 
   d3-backend:
     image: sebp/lighttpd
@@ -116,6 +133,8 @@ services:
       - VIRTUAL_HOST=d3-node-1.stage.soramitsu.co.jp
       - LETSENCRYPT_HOST=d3-node-1.stage.soramitsu.co.jp
       - LETSENCRYPT_EMAIL=admin@soramitsu.co.jp
+    networks:
+      - d3
 
   nginx-proxy:
     image: jwilder/nginx-proxy
@@ -132,6 +151,8 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock:ro
     labels:
       - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy=true"
+    networks:
+      - d3
 
   letsencrypt-nginx-proxy-companion:
     image: jrcs/letsencrypt-nginx-proxy-companion
@@ -145,6 +166,8 @@ services:
       - /var/nginx/htpasswd:/etc/nginx/htpasswd
       - /etc/ssl/letsencrypt:/etc/nginx/certs:rw
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - d3
 
 volumes:
   iroha_block_store:
@@ -153,4 +176,4 @@ networks:
   etcd:
     external:
       name: etcd
-  iroha:
+  d3:
