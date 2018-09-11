@@ -8,8 +8,8 @@ services:
       - 8545
       - 8180
     ports:
-      - 30303
-      - 30303/udp
+      - 30303:30303
+      - 30303:30303/udp
     volumes:
       - /opt/parity/mainnet:/data
     command: >
@@ -19,14 +19,16 @@ services:
       --jsonrpc-apis all
       --jsonrpc-cors all
       --base-path /data
+      --no-color
 
   d3-iroha:
-    image: hyperledger/iroha:develop
-    container_name: d3-iroha
+    #image: hyperledger/iroha:develop
+    image: soramitsu/iroha:develop-d3-old
+    container_name: d3-iroha-0
     expose:
       - 50051
     ports:
-      - 10001
+      - 10001:10001
     depends_on:
       - d3-iroha-postgres
     tty: true
@@ -90,26 +92,38 @@ services:
     container_name: d3-grpcwebproxy
     depends_on:
       - d3-iroha
-    expose:
-      - 8081:8080
+    ports:
+      - 8080:8080
     entrypoint:
       - grpcwebproxy
       - --backend_addr=d3-iroha:50051
       - --run_tls_server=false
     environment:
       - VIRTUAL_HOST=grpcwebproxy.d3-node-1.stage.soramitsu.co.jp
-      - VIRTUAL_PORT=8081
+      - VIRTUAL_PORT=8080
       - LETSENCRYPT_HOST=grpcwebproxy.d3-node-1.stage.soramitsu.co.jp
       - LETSENCRYPT_EMAIL=admin@soramitsu.co.jp
 
-  # WEBAPP!!
+  d3-backend:
+    image: sebp/lighttpd
+    depends_on:
+      - d3-notary
+    expose:
+      - 80
+    volumes:
+      - /var/nginx/html/d3-backend:/var/www/localhost/htdocs
+    environment:
+      - VIRTUAL_HOST=d3-node-1.stage.soramitsu.co.jp
+      - LETSENCRYPT_HOST=d3-node-1.stage.soramitsu.co.jp
+      - LETSENCRYPT_EMAIL=admin@soramitsu.co.jp
 
   nginx-proxy:
-    image: jwilder/nginx-proxy
+    #image: jwilder/nginx-proxy
+    image: jwilder/nginx-proxy:alpine
     container_name: nginx-proxy
     ports:
-      - 80
-      - 443
+      - 80:80
+      - 443:443
     volumes:
       - /var/nginx/conf.d:/etc/nginx/conf.d
       - /var/nginx/vhost.d:/etc/nginx/vhost.d
