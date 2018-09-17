@@ -6,6 +6,11 @@ import jp.co.soramitsu.iroha.Keypair
 import sidechain.iroha.consumer.IrohaNetworkImpl
 import sidechain.iroha.util.getAccountDetails
 
+/**
+ * @param irohaConfig - Iroha client configuration
+ * @param keypair - Iroha keypair
+ * @param mstRegistrationAccount - bitcoin registration account for bitcoin multi-sig addresses
+ */
 class BtcAddressesProvider(
     private val irohaConfig: IrohaConfig,
     private val keypair: Keypair,

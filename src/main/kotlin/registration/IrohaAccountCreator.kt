@@ -9,9 +9,16 @@ import sidechain.iroha.consumer.IrohaConsumer
 import sidechain.iroha.consumer.IrohaConverterImpl
 import sidechain.iroha.util.ModelUtil.getCurrentTime
 
+/**
+ * Class for creating new accounts in Iroha
+ * @param irohaConsumer - iroha interaction class
+ * @param mappingAccount - account where in details list of account_id-sidechain address will be stored
+ * @param creator - creator account for new accounts
+ * @param addressName - key value to put the address
+ */
 class IrohaAccountCreator(
     private val irohaConsumer: IrohaConsumer,
-    private val notaryIrohaAccount: String,
+    private val mappingAccount: String,
     private val creator: String,
     private val addressName: String
 ) {
@@ -50,7 +57,7 @@ class IrohaAccountCreator(
                     ),
                     // Set wallet/address as occupied by user id
                     IrohaCommand.CommandSetAccountDetail(
-                        notaryIrohaAccount,
+                        mappingAccount,
                         address,
                         "$userName@$domain"
                     )

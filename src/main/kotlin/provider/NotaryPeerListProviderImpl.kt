@@ -6,21 +6,25 @@ import sidechain.iroha.consumer.IrohaNetworkImpl
 import sidechain.iroha.util.getAccountDetails
 
 /**
- * Provides with list of all notaries peers in the system
+ * Provides a list of all notaries peers in the system
+ * @param irohaConfig - configuration of Iroha client
+ * @param keypair - keypair of your account
+ * @param notaryListStorageAccount - account with notary list
+ * @param notaryListSetterAccount - notary setter account
  */
 class NotaryPeerListProviderImpl(
-    private val iroha: IrohaConfig,
+    private val irohaConfig: IrohaConfig,
     private val keypair: Keypair,
     private val notaryListStorageAccount: String,
     private val notaryListSetterAccount: String
 ) : NotaryPeerListProvider {
 
-    private val irohaNetwork = IrohaNetworkImpl(iroha.hostname, iroha.port)
+    private val irohaNetwork = IrohaNetworkImpl(irohaConfig.hostname, irohaConfig.port)
 
     override fun getPeerList(
     ): List<PeerAddress> {
         return getAccountDetails(
-            iroha,
+            irohaConfig,
             keypair,
             irohaNetwork,
             notaryListStorageAccount,

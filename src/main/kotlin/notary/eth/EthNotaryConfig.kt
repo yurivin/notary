@@ -11,7 +11,7 @@ interface RefundConfig {
 
 /** Configuration of notary */
 interface EthNotaryConfig {
-    /** Iroha account that has registered wallets */
+    /** Iroha account for registering wallets */
     val registrationServiceIrohaAccount: String
 
     /** Iroha account that stores tokens */

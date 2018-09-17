@@ -4,12 +4,15 @@ import config.IrohaConfig
 
 interface BtcPreGenConfig {
 
-    /*
-    Account for triggering.
-    Triggering this account means starting BTC addresses pregeneration
-    */
+    /**
+     * Account for triggering.
+     * Triggering this account means starting BTC addresses pregeneration
+     */
     val pubKeyTriggerAccount: String
 
+    /**
+     * Mapping account to store preregistered bitcoin addresses
+     */
     val notaryAccount: String
 
     //Iroha config
@@ -20,7 +23,6 @@ interface BtcPreGenConfig {
 
     //Account that is used to register BTC addresses
     val registrationAccount: String
-
 
     //Account that is used to register BTC addresses in MST fashion
     val mstRegistrationAccount: String

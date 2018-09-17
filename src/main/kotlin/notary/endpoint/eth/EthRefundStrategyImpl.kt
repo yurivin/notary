@@ -84,6 +84,7 @@ class EthRefundStrategyImpl(
                 (appearedTx.payload.reducedPayload.commandsCount == 1) &&
                         commands.hasTransferAsset() -> {
                     val destAccount = commands.transferAsset.destAccountId
+                    // TODO: change this to notary account/ not creator?
                     if (destAccount != irohaConfig.creator)
                         throw NotaryException("Refund - check transaction. Destination account is wrong '$destAccount'")
 

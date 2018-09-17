@@ -36,7 +36,7 @@ class EthRegistrationServiceInitialization(private val ethRegistrationConfig: Et
                         EthFreeRelayProvider(
                             ethRegistrationConfig.iroha,
                             keyPair,
-                            ethRegistrationConfig.notaryIrohaAccount,
+                            ethRegistrationConfig.mappingAccount,
                             ethRegistrationConfig.relayRegistrationIrohaAccount
                         ), IrohaConsumerImpl(ethRegistrationConfig.iroha)
                     )
@@ -45,7 +45,7 @@ class EthRegistrationServiceInitialization(private val ethRegistrationConfig: Et
                     EthRegistrationStrategyImpl(
                         ethFreeRelayProvider,
                         irohaConsumer,
-                        ethRegistrationConfig.notaryIrohaAccount,
+                        ethRegistrationConfig.mappingAccount,
                         ethRegistrationConfig.iroha.creator
                     )
                 }

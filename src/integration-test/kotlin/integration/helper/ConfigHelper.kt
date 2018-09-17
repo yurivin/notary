@@ -187,7 +187,7 @@ class ConfigHelper(private val accountHelper: AccountHelper) {
         return object : EthRegistrationConfig {
             override val port = portCounter.incrementAndGet()
             override val relayRegistrationIrohaAccount = accountHelper.registrationAccount
-            override val notaryIrohaAccount = accountHelper.notaryAccount
+            override val mappingAccount = accountHelper.notaryAccount
             override val iroha = createIrohaConfig(accountHelper.registrationAccount)
         }
     }

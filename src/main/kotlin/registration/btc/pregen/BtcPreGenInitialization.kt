@@ -18,8 +18,8 @@ import sidechain.iroha.consumer.IrohaNetworkImpl
 import sidechain.iroha.util.getAccountDetails
 import java.io.File
 
-/*
-   This class listens to special account to be triggered and starts pregeneration process
+/**
+ * This class listens to special trigger account and starts pregeneration process
  */
 class BtcPreGenInitialization(
     private val irohaKeypair: Keypair,
@@ -101,7 +101,7 @@ class BtcPreGenInitialization(
             btcPreGenConfig.registrationAccount
         ).flatMap { details ->
             val notaryKeys = details.values
-            btcPublicKeyProvider.checkAndCreateMsAddress(notaryKeys)
+            btcPublicKeyProvider.checkAndCreateMSTAddress(notaryKeys)
         }
     }
 

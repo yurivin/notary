@@ -16,12 +16,18 @@ import provider.btc.BtcAddressesProvider
 import sidechain.SideChainEvent
 import java.io.File
 
+/**
+ * Initialization of Bitcoin Notary
+ * @param btcNotaryConfig
+ * @param btcAddressesProvider
+ */
 class BtcNotaryInitialization(
     private val btcNotaryConfig: BtcNotaryConfig,
     private val btcAddressesProvider: BtcAddressesProvider
 ) {
     /**
      * Init notary
+     * @return result of initialization
      */
     fun init(): Result<Unit, Exception> {
         logger.info { "Btc notary initialization" }
@@ -39,6 +45,9 @@ class BtcNotaryInitialization(
 
     /**
      * Returns observable object full of given wallet deposit events
+     * @param wallet - BitcoinJ wallet class used for the blockchain listener
+     * @param confidenceLevel - number of confirmation for transaction
+     * @return observable on coins sent to one of the address from btcAddressProvider
      */
     private fun getBtcEvents(wallet: Wallet, confidenceLevel: Int): Observable<SideChainEvent.PrimaryBlockChainEvent> {
         logger.info { "current wallet $wallet" }

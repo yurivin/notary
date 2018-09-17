@@ -16,8 +16,8 @@ import sidechain.iroha.util.getAssetPrecision
  *
  * @param irohaConfig - Iroha configuration
  * @param keypair - Iroha keypair to query
- * @param notaryIrohaAccount - tokenStorageAccount that contains details
- * @param tokenStorageAccount - tokenSetterAccount that holds tokens in tokenStorageAccount account
+ * @param notaryIrohaAccount - mappingAccount that contains details
+ * @param tokenStorageAccount - tokenStorageAccount that holds tokens in mappingAccount account
  */
 class EthTokensProviderImpl(
     private val irohaConfig: IrohaConfig,
@@ -25,7 +25,6 @@ class EthTokensProviderImpl(
     private val notaryIrohaAccount: String,
     private val tokenStorageAccount: String
 ) : EthTokensProvider {
-
     private val irohaNetwork = IrohaNetworkImpl(irohaConfig.hostname, irohaConfig.port)
     private val irohaConsumer = IrohaConsumerImpl(irohaConfig)
 

@@ -14,16 +14,33 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 private const val BTC_ASSET_NAME = "btc"
 
+/**
+ * Observable Wrapper for bitcoin coins received events
+ * @param btcAddressesProvider - wrapper to get all addresses from Iroha
+ * @param confidenceLevel - transaction confirmation number
+ * @param emitter - observable emitter
+ */
 class ReceivedCoinsListener(
     private val btcAddressesProvider: BtcAddressesProvider,
     private val confidenceLevel: Int,
     private val emitter: ObservableEmitter<SideChainEvent.PrimaryBlockChainEvent>
 ) : WalletCoinsReceivedEventListener {
 
+    /**
+     * Event for coins Bitcoin wallet coins received
+     * @param wallet - bitcoin wallet to listen
+     * @param tx - incoming transaction
+     * @param prevBalance - balance before the transaction
+     * @param newBalance - balance after the transaction
+     */
     override fun onCoinsReceived(wallet: Wallet, tx: Transaction, prevBalance: Coin, newBalance: Coin) {
         tx.confidence.addEventListener(ConfirmedTxListener(confidenceLevel, tx, ::handleTx))
     }
 
+    /**
+     * Process bitcoin transaction and adds to emitter deposit event
+     * @param tx - Bitcoin transaction
+     */
     private fun handleTx(tx: Transaction) {
         btcAddressesProvider.getAddresses().fold({ addresses ->
             tx.outputs.forEach { output ->
@@ -47,6 +64,12 @@ class ReceivedCoinsListener(
         })
     }
 
+    /**
+     * Wrapper for transaction confirmation change
+     * @param confidenceLevel - required level of confirmations
+     * @param tx - Bitcoin transaction
+     * @param txHandler - transaction processor
+     */
     private class ConfirmedTxListener(
         private val confidenceLevel: Int,
         private val tx: Transaction,

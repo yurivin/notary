@@ -16,6 +16,11 @@ import java.util.concurrent.Executors
 
 /**
  * Implementation of [Notary] business logic
+ * @param irohaConfig
+ * @param primaryChainEvents - observable on sidechain events
+ * @param domain -
+ * @param notaryListSetterAccount - new notary creator
+ * @param notaryListStorageAccount - account with a list of notaries
  */
 class NotaryImpl(
     private val irohaConfig: IrohaConfig,
