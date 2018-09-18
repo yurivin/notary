@@ -1,5 +1,6 @@
 package registration.eth.relay
 
+import config.AccountConfig
 import config.EthereumConfig
 import config.IrohaConfig
 
@@ -16,6 +17,8 @@ interface RelayRegistrationConfig {
 
     /** Notary Iroha account that stores relay register */
     val notaryIrohaAccount: String
+
+    val acccount: AccountConfig
 
     /** Iroha configurations */
     val iroha: IrohaConfig

@@ -346,20 +346,20 @@ object ModelUtil {
     /**
      * Registers ERC20 tokens in Iroha
      * @param tokens - map of tokens to register(address->token info
-     * @param tokenSetterAccount - account that creates tokens
+     * @param tokenCreatorAccount - account that creates tokens
      * @param tokenStorageAccount - account that holds tokens
      * @param irohaConsumer - iroha network layer
      * @return hex representation of transaction hash
      */
     fun registerERC20Tokens(
         tokens: Map<String, EthTokenInfo>,
-        tokenSetterAccount: String,
+        tokenCreatorAccount: String,
         tokenStorageAccount: String,
         irohaConsumer: IrohaConsumer
     ): Result<String, Exception> {
         return Result.of {
             var utx = ModelTransactionBuilder()
-                .creatorAccountId(tokenSetterAccount)
+                .creatorAccountId(tokenCreatorAccount)
                 .createdTime(BigInteger.valueOf(System.currentTimeMillis()))
             tokens.forEach { ethWallet, ethTokenInfo ->
                 utx = utx.createAsset(ethTokenInfo.name, "ethereum", ethTokenInfo.precision)

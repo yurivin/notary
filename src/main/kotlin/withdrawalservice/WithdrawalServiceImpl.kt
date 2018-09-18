@@ -5,6 +5,7 @@ import com.github.kittinunf.result.map
 import com.squareup.moshi.Moshi
 import io.reactivex.Observable
 import jp.co.soramitsu.iroha.Keypair
+import model.IrohaCredential
 import mu.KLogging
 import notary.endpoint.eth.AmountType
 import notary.endpoint.eth.BigIntegerMoshiAdapter
@@ -49,32 +50,34 @@ data class RollbackApproval(
  * Implementation of Withdrawal Service
  */
 class WithdrawalServiceImpl(
-    val withdrawalServiceConfig: WithdrawalServiceConfig,
-    val keypair: Keypair,
+    private val withdrawalServiceConfig: WithdrawalServiceConfig,
+    private val queryCreator: IrohaCredential,
     val irohaNetwork: IrohaNetwork,
     private val irohaHandler: Observable<SideChainEvent.IrohaEvent>
 ) : WithdrawalService {
+    // To query all notaries
     private val notaryPeerListProvider = NotaryPeerListProviderImpl(
-        withdrawalServiceConfig.iroha,
-        keypair,
+        irohaNetwork,
+        queryCreator,
         withdrawalServiceConfig.notaryListStorageAccount,
         withdrawalServiceConfig.notaryListSetterAccount
     )
+    // To query tokens
     private val tokensProvider: EthTokensProvider = EthTokensProviderImpl(
-        withdrawalServiceConfig.iroha,
-        keypair,
-        withdrawalServiceConfig.notaryIrohaAccount,
+        irohaNetwork,
+        queryCreator,
+        withdrawalServiceConfig.tokenCreatorAccount,
         withdrawalServiceConfig.tokenStorageAccount
     )
-    private val masterAccount = withdrawalServiceConfig.notaryIrohaAccount
+
+    private val domain = "ethereum"
 
     private fun findInAccDetail(acc: String, name: String): Result<String, Exception> {
         return getAccountDetails(
-            withdrawalServiceConfig.iroha,
-            keypair,
+            queryCreator,
             irohaNetwork,
             acc,
-            withdrawalServiceConfig.registrationIrohaAccount
+            withdrawalServiceConfig.relaySetterAccount
         ).map { relays ->
             val keys = relays.filterValues { it == name }.keys
             if (keys.isEmpty())
@@ -91,15 +94,16 @@ class WithdrawalServiceImpl(
      */
     private fun requestNotary(event: SideChainEvent.IrohaEvent.SideChainTransfer): Result<RollbackApproval, Exception> {
         // description field holds target account address
-        return findInAccDetail(masterAccount, event.srcAccount)
+        // Start withdrawal process by asking notaries
+        return findInAccDetail(withdrawalServiceConfig.relayStorageAccount, event.srcAccount)
             .map { relayAddress ->
                 val hash = event.hash
                 val amount = event.amount
                 val coins = tokensProvider.getTokens().get().toMutableMap()
-                if (!event.asset.contains("#ethereum")) {
+                if (!event.asset.contains("#$domain")) {
                     throw Exception("Incorrect asset name in Iroha event: " + event.asset)
                 }
-                val asset = event.asset.replace("#ethereum", "")
+                val asset = event.asset.replace("#$domain", "")
                 val precision = getPrecision(asset, coins)
                 val coinAddress = findInTokens(asset, coins)
 
@@ -167,7 +171,7 @@ class WithdrawalServiceImpl(
             is SideChainEvent.IrohaEvent.SideChainTransfer -> {
                 logger.info { "Iroha transfer event to ${irohaEvent.dstAccount}" }
 
-                if (irohaEvent.dstAccount == withdrawalServiceConfig.notaryIrohaAccount) {
+                if (irohaEvent.dstAccount == withdrawalServiceConfig.withdrawalTriggerAccount) {
                     logger.info { "Withdrawal event" }
                     return requestNotary(irohaEvent)
                         .map { WithdrawalServiceOutputEvent.EthRefund(it) }

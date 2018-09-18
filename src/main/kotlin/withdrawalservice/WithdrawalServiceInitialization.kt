@@ -6,6 +6,7 @@ import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
 import config.EthereumPasswords
 import io.reactivex.Observable
+import model.IrohaCredential
 import mu.KLogging
 import sidechain.SideChainEvent
 import sidechain.eth.consumer.EthConsumer
@@ -20,19 +21,29 @@ import sidechain.iroha.util.ModelUtil
  */
 class WithdrawalServiceInitialization(
     private val withdrawalConfig: WithdrawalServiceConfig,
+    credentialsConfig: WithdrawalServiceCredentials,
     private val withdrawalEthereumPasswords: EthereumPasswords
 ) {
 
-    private val irohaCreator = withdrawalConfig.iroha.creator
-    private val irohaKeypair =
-        ModelUtil.loadKeypair(
-            withdrawalConfig.iroha.pubkeyPath,
-            withdrawalConfig.iroha.privkeyPath
+    private val blockQueryCreator = IrohaCredential(
+        credentialsConfig.blockQueryCreator.accountId, ModelUtil.loadKeypair(
+            credentialsConfig.blockQueryCreator.pubKeyPath,
+            credentialsConfig.blockQueryCreator.privKeyPath
         ).get()
+    )
 
-    private val irohaHost = withdrawalConfig.iroha.hostname
+    private val notaryQueryCreator = IrohaCredential(
+        credentialsConfig.notaryQueryCreator.accountId, ModelUtil.loadKeypair(
+            credentialsConfig.notaryQueryCreator.pubKeyPath,
+            credentialsConfig.notaryQueryCreator.privKeyPath
+        ).get()
+    )
+
+
+    val irohaHost = withdrawalConfig.iroha.hostname
     private val irohaPort = withdrawalConfig.iroha.port
     private val irohaNetwork = IrohaNetworkImpl(irohaHost, irohaPort)
+
 
     /**
      * Init Iroha chain listener
@@ -40,7 +51,7 @@ class WithdrawalServiceInitialization(
      */
     private fun initIrohaChain(): Result<Observable<SideChainEvent.IrohaEvent>, Exception> {
         logger.info { "Init Iroha chain listener" }
-        return IrohaChainListener(irohaHost, irohaPort, irohaCreator, irohaKeypair).getBlockObservable()
+        return IrohaChainListener(withdrawalConfig.iroha, blockQueryCreator).getBlockObservable()
             .map { observable ->
                 observable.flatMapIterable { block -> IrohaChainHandler().parseBlock(block) }
             }
@@ -52,7 +63,7 @@ class WithdrawalServiceInitialization(
     private fun initWithdrawalService(inputEvents: Observable<SideChainEvent.IrohaEvent>): WithdrawalService {
         logger.info { "Init Withdrawal Service" }
 
-        return WithdrawalServiceImpl(withdrawalConfig, irohaKeypair, irohaNetwork, inputEvents)
+        return WithdrawalServiceImpl(withdrawalConfig, notaryQueryCreator, irohaNetwork, inputEvents)
     }
 
     private fun initEthConsumer(withdrawalService: WithdrawalService): Result<Unit, Exception> {

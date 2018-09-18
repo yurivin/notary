@@ -27,7 +27,7 @@ class IrohaBlockStreamingTest {
     /** Test configurations */
     val testConfig = loadConfigs("test", TestConfig::class.java, "/test.properties")
 
-    val creator = testConfig.iroha.creator
+    val creator =  testConfig//testConfig.iroha.creator
 
     val keypair by lazy {
         ModelUtil.loadKeypair(

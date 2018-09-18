@@ -10,7 +10,4 @@ interface EthTokensProvider {
 
     /** Returns token list in form of (Ethereum wallet -> token name) */
     fun getTokens(): Result<Map<String, EthTokenInfo>, Exception>
-
-    /** Adds all given tokens in Iroha*/
-    fun addTokens(tokens: Map<String, EthTokenInfo>): Result<Unit, Exception>
 }

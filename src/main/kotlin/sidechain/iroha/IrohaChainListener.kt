@@ -1,32 +1,35 @@
 package sidechain.iroha
 
 import com.github.kittinunf.result.Result
+import config.IrohaConfig
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.toObservable
 import jp.co.soramitsu.iroha.Keypair
 import jp.co.soramitsu.iroha.ModelBlocksQueryBuilder
+import model.IrohaCredential
 import mu.KLogging
+import org.graalvm.compiler.core.aarch64.AArch64SuitesCreator
 import sidechain.ChainListener
 import sidechain.iroha.util.ModelUtil
 import java.math.BigInteger
 
 /**
  * Dummy implementation of [ChainListener] with effective dependencies
+ * @param irohaConfig
+ * @param queryCreator
  */
 class IrohaChainListener(
-    irohaHost: String,
-    irohaPort: Int,
-    val account: String,
-    val keypair: Keypair
+    irohaConfig: IrohaConfig,
+    queryCreator: IrohaCredential
 ) : ChainListener<iroha.protocol.BlockOuterClass.Block> {
     val uquery = ModelBlocksQueryBuilder()
-        .creatorAccountId(account)
+        .creatorAccountId(queryCreator.accountId)
         .createdTime(ModelUtil.getCurrentTime())
         .queryCounter(BigInteger.valueOf(1))
         .build()
 
-    val query = ModelUtil.prepareBlocksQuery(uquery, keypair)
-    val stub = ModelUtil.getQueryStub(ModelUtil.getChannel(irohaHost, irohaPort))
+    val query = ModelUtil.prepareBlocksQuery(uquery, queryCreator.keyPair)
+    val stub = ModelUtil.getQueryStub(ModelUtil.getChannel(irohaConfig.hostname, irohaConfig.port))
 
     /**
      * Returns an observable that emits a new block every time it gets it from Iroha

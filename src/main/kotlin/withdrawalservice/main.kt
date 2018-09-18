@@ -18,13 +18,19 @@ private val logger = KLogging().logger
 fun main(args: Array<String>) {
     val withdrawalConfig = loadConfigs("withdrawal", WithdrawalServiceConfig::class.java, "/eth/withdrawal.properties")
     val passwordConfig = loadEthPasswords("withdrawal", "/eth/ethereum_password.properties", args)
-    executeWithdrawal(withdrawalConfig, passwordConfig)
+    val credentialsConfig =
+        loadConfigs("withdrawal", WithdrawalServiceCredentials::class.java, "/eth/withdrawal_credentials.properties")
+    executeWithdrawal(withdrawalConfig, credentialsConfig, passwordConfig)
 }
 
-fun executeWithdrawal(withdrawalConfig: WithdrawalServiceConfig, passwordConfig: EthereumPasswords) {
+fun executeWithdrawal(
+    withdrawalConfig: WithdrawalServiceConfig,
+    credentialsConfig: WithdrawalServiceCredentials,
+    passwordConfig: EthereumPasswords
+) {
     logger.info { "Run withdrawal service" }
     IrohaInitialization.loadIrohaLibrary()
-        .flatMap { WithdrawalServiceInitialization(withdrawalConfig, passwordConfig).init() }
+        .flatMap { WithdrawalServiceInitialization(withdrawalConfig, credentialsConfig, passwordConfig).init() }
         .failure { ex ->
             logger.error("Cannot run withdrawal service", ex)
             System.exit(1)

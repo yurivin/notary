@@ -2,21 +2,23 @@ package provider
 
 import config.IrohaConfig
 import jp.co.soramitsu.iroha.Keypair
+import model.IrohaCredential
 import mu.KLogging
 import provider.eth.EthRelayProviderIrohaImpl
+import sidechain.iroha.consumer.IrohaNetwork
 import sidechain.iroha.consumer.IrohaNetworkImpl
 import sidechain.iroha.util.getAccountDetails
 
 /**
  * Provides a list of all notaries peers in the system
- * @param irohaConfig - configuration of Iroha client
- * @param keypair - keypair of your account
+ * @param irohaNetwork - iroha network
+ * @param queryCreator - credentials to make queries
  * @param notaryListStorageAccount - account with notary list
  * @param notaryListSetterAccount - notary setter account
  */
 class NotaryPeerListProviderImpl(
-    private val irohaConfig: IrohaConfig,
-    private val keypair: Keypair,
+    private val irohaNetwork: IrohaNetwork,
+    private val queryCreator: IrohaCredential,
     private val notaryListStorageAccount: String,
     private val notaryListSetterAccount: String
 ) : NotaryPeerListProvider {
@@ -28,13 +30,10 @@ class NotaryPeerListProviderImpl(
         }
     }
 
-    private val irohaNetwork = IrohaNetworkImpl(irohaConfig.hostname, irohaConfig.port)
-
     override fun getPeerList(
     ): List<PeerAddress> {
         return getAccountDetails(
-            irohaConfig,
-            keypair,
+            queryCreator,
             irohaNetwork,
             notaryListStorageAccount,
             notaryListSetterAccount

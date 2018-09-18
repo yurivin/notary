@@ -4,16 +4,18 @@ import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
 import config.IrohaConfig
 import jp.co.soramitsu.iroha.UnsignedTx
+import model.IrohaCredential
 import mu.KLogging
 import sidechain.iroha.util.ModelUtil
 
 /**
  * Endpoint of Iroha to write transactions
  * @param irohaConfig Iroha configurations
+ * @param txCreator transaction creator credentials
  */
-class IrohaConsumerImpl(irohaConfig: IrohaConfig) : IrohaConsumer {
+class IrohaConsumerImpl(irohaConfig: IrohaConfig, txCreator: IrohaCredential) : IrohaConsumer {
 
-    val keypair = ModelUtil.loadKeypair(irohaConfig.pubkeyPath, irohaConfig.privkeyPath).get()
+    val keypair = txCreator.keyPair
 
     val irohaNetwork = IrohaNetworkImpl(irohaConfig.hostname, irohaConfig.port)
 
