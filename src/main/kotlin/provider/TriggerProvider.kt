@@ -3,6 +3,8 @@ package provider
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.map
 import config.IrohaConfig
+import mu.KLogging
+import provider.eth.EthRelayProviderIrohaImpl
 import sidechain.iroha.consumer.IrohaConsumerImpl
 import sidechain.iroha.util.ModelUtil
 
@@ -18,6 +20,12 @@ class TriggerProvider(
     private val triggerAccount: String,
     private val callerAccount: String
 ) {
+    init {
+        logger.info {
+            "Init trigger provider with triggered account '$triggeredAccount' and trigger caller account '$triggerCallerAccount'"
+        }
+    }
+
     private val irohaConsumer = IrohaConsumerImpl(irohaConfig)
 
     /**
@@ -34,7 +42,13 @@ class TriggerProvider(
             payload,
             ""
         ).map {
+            logger.info { "$triggeredAccount was triggered with payload $payload" }
             Unit
         }
     }
+
+    /**
+     * Logger
+     */
+    companion object : KLogging()
 }

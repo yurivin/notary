@@ -25,6 +25,13 @@ class EthTokensProviderImpl(
     private val notaryIrohaAccount: String,
     private val tokenStorageAccount: String
 ) : EthTokensProvider {
+
+    init {
+        EthRelayProviderIrohaImpl.logger.info {
+            "Init token provider with notary account '$notaryIrohaAccount' and token storage account '$tokenStorageAccount'"
+        }
+    }
+
     private val irohaNetwork = IrohaNetworkImpl(irohaConfig.hostname, irohaConfig.port)
     private val irohaConsumer = IrohaConsumerImpl(irohaConfig)
 

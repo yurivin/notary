@@ -20,7 +20,7 @@ class ConfigHelper(private val accountHelper: AccountHelper) {
     val testConfig = loadConfigs("test", TestConfig::class.java, "/test.properties")
 
     /** Ethereum password configs */
-    val ethPasswordConfig = loadConfigs("test", EthereumPasswords::class.java, "/eth/ethereum_password.properties")
+    val ethPasswordConfig = loadEthPasswords("test", "/eth/ethereum_password.properties")
 
     /** Configuration for notary instance */
     val ethNotaryConfig = loadConfigs("eth-notary", EthNotaryConfig::class.java, "/eth/notary.properties")
@@ -128,7 +128,7 @@ class ConfigHelper(private val accountHelper: AccountHelper) {
 
     fun createBtcNotaryConfig(): BtcNotaryConfig {
         return object : BtcNotaryConfig {
-            override val mstRegistrationAccount: String
+            override val registrationAccount: String
                 get() = accountHelper.registrationAccount
             override val iroha: IrohaConfig
                 get() = createIrohaConfig()
@@ -142,7 +142,7 @@ class ConfigHelper(private val accountHelper: AccountHelper) {
     fun createBtcRegistrationConfig(): BtcRegistrationConfig {
         return object : BtcRegistrationConfig {
             override val mstRegistrationAccount: String
-                get() = accountHelper.registrationAccount
+                get() = accountHelper.mstRegistrationAccount
             override val port: Int
                 get() = btcRegistrationConfig.port
             override val registrationAccount: String

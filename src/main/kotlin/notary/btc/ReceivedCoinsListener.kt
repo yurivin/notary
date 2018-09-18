@@ -7,7 +7,7 @@ import org.bitcoinj.core.Transaction
 import org.bitcoinj.core.TransactionConfidence
 import org.bitcoinj.wallet.Wallet
 import org.bitcoinj.wallet.listeners.WalletCoinsReceivedEventListener
-import provider.btc.BtcAddressesProvider
+import provider.btc.BtcRegisteredAddressesProvider
 import sidechain.SideChainEvent
 import java.math.BigInteger
 import java.util.concurrent.atomic.AtomicBoolean
@@ -21,7 +21,7 @@ private const val BTC_ASSET_NAME = "btc"
  * @param emitter - observable emitter
  */
 class ReceivedCoinsListener(
-    private val btcAddressesProvider: BtcAddressesProvider,
+    private val btcRegisteredAddressesProvider: BtcRegisteredAddressesProvider,
     private val confidenceLevel: Int,
     private val emitter: ObservableEmitter<SideChainEvent.PrimaryBlockChainEvent>
 ) : WalletCoinsReceivedEventListener {
@@ -34,6 +34,7 @@ class ReceivedCoinsListener(
      * @param newBalance - balance after the transaction
      */
     override fun onCoinsReceived(wallet: Wallet, tx: Transaction, prevBalance: Coin, newBalance: Coin) {
+        logger.info { "BTC coin was received, but it's not confirmed yet. Tx: ${tx.hashAsString}" }
         tx.confidence.addEventListener(ConfirmedTxListener(confidenceLevel, tx, ::handleTx))
     }
 
@@ -42,7 +43,7 @@ class ReceivedCoinsListener(
      * @param tx - Bitcoin transaction
      */
     private fun handleTx(tx: Transaction) {
-        btcAddressesProvider.getAddresses().fold({ addresses ->
+        btcRegisteredAddressesProvider.getRegisteredAddresses().fold({ addresses ->
             tx.outputs.forEach { output ->
                 val btcAddress = output.scriptPubKey.getToAddress(output.params).toBase58()
                 val irohaAccount = addresses[btcAddress]
@@ -55,12 +56,13 @@ class ReceivedCoinsListener(
                         BigInteger.valueOf(output.value.value).toString(),
                         ""
                     )
+                    logger.info { "BTC deposit event(tx ${tx.hashAsString}, amount ${output.value.value}) was created. Related client is $irohaAccount. " }
                     emitter.onNext(event)
                 }
             }
 
         }, { ex ->
-            logger.error("cannot get addresses", ex)
+            logger.error("Cannot get addresses", ex)
         })
     }
 
@@ -89,6 +91,7 @@ class ReceivedCoinsListener(
             if (confidence.depthInBlocks >= confidenceLevel
                 && processed.compareAndSet(false, true)
             ) {
+                logger.info { "BTC tx ${tx.hashAsString} was confirmed" }
                 confidence.removeEventListener(this)
                 txHandler(tx)
             }

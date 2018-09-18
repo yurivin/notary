@@ -17,4 +17,6 @@ interface BtcNotaryConfig {
 
     /** Iroha account to set notary peer list */
     val notaryListSetterAccount: String
+
+    val registrationAccount: String
 }

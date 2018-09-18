@@ -40,9 +40,9 @@ class BtcPublicKeyProvider(
     /**
      * Creates notary public key and sets it into session account details
      * @param sessionAccountName - name of session account
-     * @return Result of operation
+     * @return new public key created by notary
      */
-    fun createKey(sessionAccountName: String): Result<Unit, Exception> {
+    fun createKey(sessionAccountName: String): Result<String, Exception> {
         // Generate new key from wallet
         val key = wallet.freshReceiveKey()
         val pubKey = key.publicKeyAsHex
@@ -53,13 +53,13 @@ class BtcPublicKeyProvider(
             String.getRandomId(),
             pubKey
         ).map {
-            logger.info { "new pub key $pubKey was created" }
             wallet.saveToFile(walletFile)
+            pubKey
         }
     }
 
     /**
-     * Creates multi signature address if enough public keys are provided
+     * Creates multisignature address if enough public keys are provided
      * @param notaryKeys - list of all notaries public keys
      * @return Result of operation
      */
@@ -67,7 +67,7 @@ class BtcPublicKeyProvider(
         return Result.of {
             val peers = notaryPeerListProvider.getPeerList().size
             if (peers == 0) {
-                throw IllegalStateException("no peers to create btc multi signature address")
+                throw IllegalStateException("No peers to create btc multisignature address")
             } else if (notaryKeys.size == peers && hasMyKey(notaryKeys)) {
                 val threshold = getThreshold(peers)
                 val msAddress = createMultiSigAddress(notaryKeys, threshold)
@@ -78,7 +78,10 @@ class BtcPublicKeyProvider(
                     mappingAccount,
                     msAddress.toBase58(),
                     "free"
-                ).fold({ wallet.saveToFile(walletFile) }, { ex -> throw ex })
+                ).fold({
+                    wallet.saveToFile(walletFile)
+                    logger.info { "New BTC multisignature address $msAddress was created " }
+                }, { ex -> throw ex })
             }
         }
     }

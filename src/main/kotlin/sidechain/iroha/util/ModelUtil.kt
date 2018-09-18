@@ -112,7 +112,7 @@ object ModelUtil {
                     String(java.nio.file.Files.readAllBytes(Paths.get(privkeyPath)))
                 )
             } catch (e: IOException) {
-                throw Exception("Unable to read Iroha key files.", e)
+                throw Exception("Unable to read Iroha key files", e)
             }
         }
     }
@@ -237,6 +237,34 @@ object ModelUtil {
             .build()
         return irohaConsumer.sendAndCheck(tx)
     }
+
+    /**
+     * Send SetAccountDetail to Iroha
+     * @param irohaConsumer - iroha network layer
+     * @param creator - transaction creator
+     * @param accountId - account to set details
+     * @param key - key of detail
+     * @param value - value of detail
+     * @param quorum - quorum
+     * @return hex representation of transaction hash
+     */
+    fun setAccountDetail(
+        irohaConsumer: IrohaConsumer,
+        creator: String,
+        accountId: String,
+        key: String,
+        value: String,
+        quorum: Int
+    ): Result<String, Exception> {
+        val tx = ModelTransactionBuilder()
+            .creatorAccountId(creator)
+            .createdTime(getCurrentTime())
+            .setAccountDetail(accountId, key, value)
+            .setAccountQuorum(creator, quorum)
+            .build()
+        return irohaConsumer.sendAndCheck(tx)
+    }
+
 
     /**
      * Send createAsset to Iroha
