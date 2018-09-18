@@ -9,6 +9,4 @@ interface ERC20TokenRegistrationConfig {
     val tokensFilePath: String
     //Account that stores tokens
     val tokenStorageAccount: String
-    //Account that sets tokens in tokenStorageAccount
-    val tokenSetterAccount: String
 }

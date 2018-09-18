@@ -9,6 +9,7 @@ import sidechain.iroha.IrohaInitialization
 import sidechain.iroha.util.ModelUtil
 
 private val logger = KLogging().logger
+private val TR_PREFIX = "token-registration"
 
 /**
  * ERC20 tokens registration entry point
@@ -16,23 +17,25 @@ private val logger = KLogging().logger
 fun main(args: Array<String>) {
     val tokenRegistrationConfig =
         loadConfigs(
-            "token-registration",
+            TR_PREFIX,
             ERC20TokenRegistrationConfig::class.java,
             "/eth/token_registration.properties"
         )
-    executeTokenRegistration(tokenRegistrationConfig)
+    val tokenRegistrationCredentials = loadConfigs(
+        TR_PREFIX,
+        ERC20TokenRegistrationCredentials::class.java,
+        "/eth/token_registration_credentials.properties"
+    )
+    executeTokenRegistration(tokenRegistrationConfig, tokenRegistrationCredentials)
 }
 
-fun executeTokenRegistration(tokenRegistrationConfig: ERC20TokenRegistrationConfig) {
+fun executeTokenRegistration(
+    tokenRegistrationConfig: ERC20TokenRegistrationConfig,
+    tokenRegistrationCredentials: ERC20TokenRegistrationCredentials
+) {
     logger.info { "Run ERC20 tokens registration" }
     IrohaInitialization.loadIrohaLibrary()
-        .flatMap {
-            ModelUtil.loadKeypair(
-                tokenRegistrationConfig.iroha.pubkeyPath,
-                tokenRegistrationConfig.iroha.privkeyPath
-            )
-        }
-        .flatMap { keypair -> ERC20TokenRegistration(keypair, tokenRegistrationConfig).init() }
+        .flatMap { keypair -> ERC20TokenRegistration(tokenRegistrationCredentials, tokenRegistrationConfig).init() }
         .fold({ logger.info { "ERC20 tokens were successfully registered" } }, { ex ->
             logger.error("Cannot run ERC20 token registration", ex)
             System.exit(1)

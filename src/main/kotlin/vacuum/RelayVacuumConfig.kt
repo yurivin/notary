@@ -6,13 +6,15 @@ import config.IrohaConfig
 interface RelayVacuumConfig {
 
     /** Iroha account that has registered wallets */
-    val registrationServiceIrohaAccount: String
+    val relayStorageAccount: String
+
+    val relaySetterAccount: String
 
     /** Iroha account that stores tokens */
     val tokenStorageAccount: String
 
-    /** Notary Iroha account that stores relay register */
-    val notaryIrohaAccount: String
+    /** Account that creates and sets tokens */
+    val tokenCreatorAccount: String
 
     /** Iroha configurations */
     val iroha: IrohaConfig

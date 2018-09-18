@@ -5,38 +5,51 @@ import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
 import config.EthereumPasswords
 import contract.Relay
-import jp.co.soramitsu.iroha.Keypair
+import model.IrohaCredential
 import mu.KLogging
 import provider.eth.EthRelayProviderIrohaImpl
 import provider.eth.EthTokensProviderImpl
 import sidechain.eth.util.DeployHelper
+import sidechain.iroha.consumer.IrohaNetworkImpl
+import sidechain.iroha.util.ModelUtil
 
 /**
  * Class is responsible for relay contracts vacuum
  * Sends all tokens from relay smart contracts to master contract in Ethereum network
+ * @param relayVacuumConfig
+ * @param EthereumPasswords
+ *
  */
 class RelayVacuum(
     relayVacuumConfig: RelayVacuumConfig,
     relayVacuumEthereumPasswords: EthereumPasswords,
-    keypair: Keypair
+    relayVacuumCredentials: RelayVacuumCredentials
 ) {
     private val ethTokenAddress = "0x0000000000000000000000000000000000000000"
 
     /** Ethereum endpoint */
     private val deployHelper = DeployHelper(relayVacuumConfig.ethereum, relayVacuumEthereumPasswords)
+    private val irohaNetwork =  IrohaNetworkImpl(relayVacuumConfig.iroha.hostname, relayVacuumConfig.iroha.port)
+
+    private val queryCreator = IrohaCredential(
+        relayVacuumCredentials.notaryQueryCreator.accountId, ModelUtil.loadKeypair(
+            relayVacuumCredentials.notaryQueryCreator.pubKeyPath,
+            relayVacuumCredentials.notaryQueryCreator.privKeyPath
+        ).get()
+    )
 
     private val ethTokensProvider = EthTokensProviderImpl(
-        relayVacuumConfig.iroha,
-        keypair,
-        relayVacuumConfig.notaryIrohaAccount,
+        irohaNetwork,
+        queryCreator,
+        relayVacuumConfig.tokenCreatorAccount,
         relayVacuumConfig.tokenStorageAccount
     )
 
     private val ethRelayProvider = EthRelayProviderIrohaImpl(
-        relayVacuumConfig.iroha,
-        keypair,
-        relayVacuumConfig.notaryIrohaAccount,
-        relayVacuumConfig.registrationServiceIrohaAccount
+        irohaNetwork,
+        queryCreator,
+        relayVacuumConfig.relayStorageAccount,
+        relayVacuumConfig.relaySetterAccount
     )
 
     /**

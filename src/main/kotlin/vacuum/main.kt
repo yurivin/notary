@@ -17,15 +17,20 @@ private val logger = KLogging().logger
  */
 fun main(args: Array<String>) {
     val relayVacuumConfig = loadConfigs(RELAY_VACUUM_PREFIX, RelayVacuumConfig::class.java, "/eth/vacuum.properties")
-    executeVacuum(relayVacuumConfig, args)
+    val relayVacuumCredentials =
+        loadConfigs(RELAY_VACUUM_PREFIX, RelayVacuumCredentials::class.java, "/eth/vacuum_credentials.properties")
+    executeVacuum(relayVacuumConfig, relayVacuumCredentials, args)
 }
 
-fun executeVacuum(relayVacuumConfig: RelayVacuumConfig, args: Array<String> = emptyArray()) {
+fun executeVacuum(
+    relayVacuumConfig: RelayVacuumConfig,
+    relayVacuumCredentials: RelayVacuumCredentials,
+    args: Array<String> = emptyArray()
+) {
     logger.info { "Run relay vacuum" }
     val passwordConfig = loadEthPasswords(RELAY_VACUUM_PREFIX, "/eth/ethereum_password.properties", args)
     IrohaInitialization.loadIrohaLibrary()
-        .flatMap { ModelUtil.loadKeypair(relayVacuumConfig.iroha.pubkeyPath, relayVacuumConfig.iroha.privkeyPath) }
-        .flatMap { keypair -> RelayVacuum(relayVacuumConfig, passwordConfig, keypair).vacuum() }
+        .flatMap { keypair -> RelayVacuum(relayVacuumConfig, passwordConfig, relayVacuumCredentials).vacuum() }
         .failure { ex ->
             logger.error("Cannot run vacuum", ex)
             System.exit(1)
