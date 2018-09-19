@@ -2,13 +2,11 @@ package registration.btc
 
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.map
-import jp.co.soramitsu.iroha.Keypair
 import model.IrohaCredential
 import mu.KLogging
 import provider.btc.BtcAddressesProvider
 import provider.btc.BtcRegisteredAddressesProvider
 import registration.RegistrationServiceEndpoint
-import sidechain.iroha.consumer.IrohaConsumerImpl
 import sidechain.iroha.util.ModelUtil
 
 class BtcRegistrationServiceInitialization(
@@ -23,6 +21,13 @@ class BtcRegistrationServiceInitialization(
                 btcRegistrationCredentials.queryCreatorCredentials.privKeyPath
             ).get()
         )
+
+    private val btcRegisteredAddressesSetterCredential = IrohaCredential(
+        btcRegistrationCredentials.btcRegisteredAddressesSetterCredential.accountId, ModelUtil.loadKeypair(
+            btcRegistrationCredentials.btcRegisteredAddressesSetterCredential.pubKeyPath,
+            btcRegistrationCredentials.btcRegisteredAddressesSetterCredential.privKeyPath
+        ).get()
+    )
 
 
     /**
@@ -43,14 +48,15 @@ class BtcRegistrationServiceInitialization(
                     btcRegistrationConfig.iroha,
                     queryCreator,
                     btcRegistrationConfig.btcRegisteredAddressStorageAccount,
-                    btcRegistrationConfig.btcRegisteredAddressSetterAccount
+                    btcRegistrationCredentials.btcRegisteredAddressesSetterCredential.accountId
                 )
             BtcRegistrationStrategyImpl(
                 btcAddressesProvider,
                 btcTakenAddressesProvider,
-                irohaConsumer,
-                btcRegistrationConfig.iroha.creator,
-                btcRegistrationConfig.registrationAccount
+                btcRegistrationConfig.iroha,
+                btcRegisteredAddressesSetterCredential,
+                btcRegistrationConfig.btcRegisteredAddressStorageAccount,
+                btcRegistrationConfig.accountsDomain
             )
         }.map { registrationStrategy ->
             RegistrationServiceEndpoint(
