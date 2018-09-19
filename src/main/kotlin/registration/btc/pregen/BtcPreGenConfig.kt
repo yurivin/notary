@@ -4,10 +4,10 @@ import config.IrohaConfig
 
 interface BtcPreGenConfig {
 
-
+    // Domain for btc sessions
     val sessionsDomain: String
 
-
+    // Account that stores generated btc addresses, ready to use
     val btcAddressStorageAccount: String
 
     /**
@@ -16,22 +16,11 @@ interface BtcPreGenConfig {
      */
     val pubKeyTriggerAccount: String
 
-    /**
-     * Mapping account to store preregistered bitcoin addresses
-     */
-    val notaryAccount: String
-
     //Iroha config
     val iroha: IrohaConfig
 
     //Path to BTC wallet file
     val btcWalletFilePath: String
-
-    //Account that is used to register BTC addresses
-    val registrationAccount: String
-
-    //Account that is used to register BTC addresses in MST fashion
-    val mstRegistrationAccount: String
 
     //Account that stores all registered notaries
     val notaryListStorageAccount: String

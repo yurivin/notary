@@ -25,7 +25,7 @@ import java.io.File
  * This class listens to special trigger account and starts pregeneration process
  */
 class BtcPreGenInitialization(
-    private val btcPreGenCredentials: BtcPreGenCredentials,
+    btcPreGenCredentials: BtcPreGenCredentials,
     private val btcPreGenConfig: BtcPreGenConfig
 ) {
     private val walletFile = File(btcPreGenConfig.btcWalletFilePath)
