@@ -214,6 +214,7 @@ object ModelUtil {
             .flatMap { getFirstTransaction(it) }
     }
 
+    // TODO: Bulat, get creator from IrohaConsumer
     /**
      * Send SetAccountDetail to Iroha
      * @param irohaConsumer - iroha network layer

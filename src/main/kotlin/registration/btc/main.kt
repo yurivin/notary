@@ -10,21 +10,23 @@ import sidechain.iroha.IrohaInitialization
 import sidechain.iroha.util.ModelUtil
 
 private val logger = KLogging().logger
+private val PREFIX = "btc-registration"
 
 /**
  * Entry point for Registration Service
  */
 fun main(args: Array<String>) {
     val registrationConfig =
-        loadConfigs("btc-registration", BtcRegistrationConfig::class.java, "/btc/registration.properties")
-    executeRegistration(registrationConfig)
+        loadConfigs(PREFIX, BtcRegistrationConfig::class.java, "/btc/registration.properties")
+    val registrationCredentials =
+        loadConfigs(PREFIX, BtcRegistrationCredentials::class.java, "/btc/registration_credentials.properties")
+    executeRegistration(registrationConfig, registrationCredentials)
 }
 
-fun executeRegistration(registrationConfig: BtcRegistrationConfig) {
+fun executeRegistration(registrationConfig: BtcRegistrationConfig, registrationCredentials: BtcRegistrationCredentials) {
     logger.info { "Run BTC client registration" }
     IrohaInitialization.loadIrohaLibrary()
-        .flatMap { ModelUtil.loadKeypair(registrationConfig.iroha.pubkeyPath, registrationConfig.iroha.privkeyPath) }
-        .flatMap { keypair -> BtcRegistrationServiceInitialization(registrationConfig, keypair).init() }
+        .flatMap { BtcRegistrationServiceInitialization(registrationConfig, registrationCredentials).init() }
         .failure { ex ->
             logger.error("Cannot run btc registration", ex)
             System.exit(1)

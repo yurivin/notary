@@ -9,11 +9,16 @@ interface BtcRegistrationConfig {
     /** Port of registration service */
     val port: Int
 
-    /** Iroha account for btc account register */
-    val registrationAccount: String
 
-    /** Iroha account for btc account register in MST fashion*/
-    val mstRegistrationAccount: String
+    val btcAddressStorageAccount: String
+
+    val btcAddressSetterAccount: String
+
+    val btcRegisteredAddressStorageAccount: String
+
+    val btcRegisteredAddressSetterAccount: String
+
+
 
     /** Iroha configuration */
     val iroha: IrohaConfig

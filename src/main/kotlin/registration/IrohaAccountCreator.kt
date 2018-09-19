@@ -13,13 +13,13 @@ import sidechain.iroha.util.ModelUtil.getCurrentTime
 /**
  * Class for creating new accounts in Iroha
  * @param irohaConsumer - iroha interaction class
- * @param relayStorageAccount - account where in details list of account_id-sidechain address will be stored
+ * @param sidechainAddressStorageAccount - account where in details list of account_id-sidechain address will be stored
  * @param creator - creator account for new accounts
  * @param addressName - key value to put the address
  */
 class IrohaAccountCreator(
     private val irohaConsumer: IrohaConsumer,
-    private val relayStorageAccount: String,
+    private val sidechainAddressStorageAccount: String,
     private val creator: String,
     private val addressName: String
 ) {
@@ -58,7 +58,7 @@ class IrohaAccountCreator(
                     ),
                     // Set wallet/address as occupied by user id
                     IrohaCommand.CommandSetAccountDetail(
-                        relayStorageAccount,
+                        sidechainAddressStorageAccount,
                         currencyAddress,
                         "$userName@$domain"
                     )
