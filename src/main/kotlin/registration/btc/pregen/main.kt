@@ -10,17 +10,21 @@ import sidechain.iroha.IrohaInitialization
 import sidechain.iroha.util.ModelUtil
 
 private val logger = KLogging().logger
+private val PREFIX = "btc-pregen"
+
+
 fun main(args: Array<String>) {
     val btcPkPreGenConfig =
-        loadConfigs("btc-pregen", BtcPreGenConfig::class.java, "/btc/pregeneration.properties")
-    executePreGeneration(btcPkPreGenConfig)
+        loadConfigs(PREFIX, BtcPreGenConfig::class.java, "/btc/pregeneration.properties")
+    val btcPreGenCredentials =
+        loadConfigs(PREFIX, BtcPreGenCredentials::class.java, "/btc/pregeneration_credentials.properties")
+    executePreGeneration(btcPkPreGenConfig, btcPreGenCredentials)
 }
 
-fun executePreGeneration(btcPkPreGenConfig: BtcPreGenConfig) {
+fun executePreGeneration(btcPkPreGenConfig: BtcPreGenConfig, credentials: BtcPreGenCredentials) {
     logger.info { "Run BTC multisignature address pregeneration" }
     IrohaInitialization.loadIrohaLibrary()
-        .flatMap { ModelUtil.loadKeypair(btcPkPreGenConfig.iroha.pubkeyPath, btcPkPreGenConfig.iroha.privkeyPath) }
-        .flatMap { keyPair -> BtcPreGenInitialization(keyPair, btcPkPreGenConfig).init() }
+        .flatMap { BtcPreGenInitialization(credentials, btcPkPreGenConfig).init() }
         .failure { ex ->
             logger.error("cannot run btc address pregeneration", ex)
             System.exit(1)

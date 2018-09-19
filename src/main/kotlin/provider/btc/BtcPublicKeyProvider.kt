@@ -2,6 +2,8 @@ package provider.btc
 
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.map
+import config.IrohaConfig
+import model.IrohaCredential
 import mu.KLogging
 import org.bitcoinj.core.Address
 import org.bitcoinj.core.ECKey
@@ -10,7 +12,7 @@ import org.bitcoinj.params.RegTestParams
 import org.bitcoinj.script.ScriptBuilder
 import org.bitcoinj.wallet.Wallet
 import provider.NotaryPeerListProvider
-import sidechain.iroha.consumer.IrohaConsumer
+import sidechain.iroha.consumer.IrohaConsumerImpl
 import sidechain.iroha.util.ModelUtil
 import util.getRandomId
 import java.io.File
@@ -19,23 +21,26 @@ import java.io.File
  *  Bitcoin keys provider
  *  @param wallet - bitcoinJ wallet class
  *  @param walletFile - file where to safe wallet
- *  @param irohaConsumer
- *  @param notaryPeerListProvider - Provider that helps us to fetch all the peers registered in the network
- *  @param btcRegistrationAccount - registration account for new account with btc sidechain
- *  @param mstBtcRegistrationAccount - BTC registration account, that works in MST fashion
- *  @param mappingAccount - Notary account to store BTC addresses
+ *  @param irohaConfig - configutation to start Iroha client
+ *  @param btcSessionCreatorCredentials - Account to generate and put session keys
+ *  @param btcAddressSetterCredentials - registration account, that puts multisignature key to storage account
+ *  @param btcAddressStorageAccount - account to store generated multisig keys
+ *  @param sessionDomain - domain of sessions
+ *  @param notaryPeerListProvider - class to query all current notaries
  */
 class BtcPublicKeyProvider(
     private val wallet: Wallet,
     private val walletFile: File,
-    private val irohaConsumer: IrohaConsumer,
-    private val notaryPeerListProvider: NotaryPeerListProvider,
-    private val btcRegistrationAccount: String,
-    private val mstBtcRegistrationAccount: String,
-    private val mappingAccount: String
+    irohaConfig: IrohaConfig,
+    private val btcSessionCreatorCredentials: IrohaCredential,
+    private val btcAddressSetterCredentials: IrohaCredential,
+    private val btcAddressStorageAccount: String,
+    private val sessionDomain: String,
+    private val notaryPeerListProvider: NotaryPeerListProvider
 ) {
 
-    private val sessionDomain = "btcSession"
+    private val sessionConsumer = IrohaConsumerImpl(irohaConfig, btcSessionCreatorCredentials)
+    private val multiSigConsumer = IrohaConsumerImpl(irohaConfig, btcAddressSetterCredentials)
 
     /**
      * Creates notary public key and sets it into session account details
@@ -47,8 +52,8 @@ class BtcPublicKeyProvider(
         val key = wallet.freshReceiveKey()
         val pubKey = key.publicKeyAsHex
         return ModelUtil.setAccountDetail(
-            irohaConsumer,
-            btcRegistrationAccount,
+            sessionConsumer,
+            btcSessionCreatorCredentials.accountId,
             "$sessionAccountName@$sessionDomain",
             String.getRandomId(),
             pubKey
@@ -73,9 +78,9 @@ class BtcPublicKeyProvider(
                 val msAddress = createMultiSigAddress(notaryKeys, threshold)
                 wallet.addWatchedAddress(msAddress)
                 ModelUtil.setAccountDetail(
-                    irohaConsumer,
-                    mstBtcRegistrationAccount,
-                    mappingAccount,
+                    multiSigConsumer,
+                    btcAddressSetterCredentials.accountId,
+                    btcAddressStorageAccount,
                     msAddress.toBase58(),
                     "free"
                 ).fold({

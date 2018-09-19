@@ -4,6 +4,12 @@ import config.IrohaConfig
 
 interface BtcPreGenConfig {
 
+
+    val sessionsDomain: String
+
+
+    val btcAddressStorageAccount: String
+
     /**
      * Account for triggering.
      * Triggering this account means starting BTC addresses pregeneration

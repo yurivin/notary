@@ -8,13 +8,16 @@ import io.reactivex.Observable
 import iroha.protocol.BlockOuterClass
 import iroha.protocol.Commands
 import jp.co.soramitsu.iroha.Keypair
+import model.IrohaCredential
 import mu.KLogging
 import org.bitcoinj.wallet.Wallet
 import provider.NotaryPeerListProviderImpl
 import provider.btc.BtcPublicKeyProvider
+import registration.eth.relay.RelayRegistrationCredentials
 import sidechain.iroha.IrohaChainListener
 import sidechain.iroha.consumer.IrohaConsumerImpl
 import sidechain.iroha.consumer.IrohaNetworkImpl
+import sidechain.iroha.util.ModelUtil
 import sidechain.iroha.util.getAccountDetails
 import java.io.File
 
@@ -22,15 +25,43 @@ import java.io.File
  * This class listens to special trigger account and starts pregeneration process
  */
 class BtcPreGenInitialization(
-    private val irohaKeypair: Keypair,
+    private val btcPreGenCredentials: BtcPreGenCredentials,
     private val btcPreGenConfig: BtcPreGenConfig
 ) {
     private val walletFile = File(btcPreGenConfig.btcWalletFilePath)
     private val wallet = Wallet.loadFromFile(walletFile)
-    private val irohaConsumer = IrohaConsumerImpl(btcPreGenConfig.iroha)
+
+    private val irohaNetwork = IrohaNetworkImpl(btcPreGenConfig.iroha.hostname, btcPreGenConfig.iroha.port)
+
+    // Account is used to make queries: Get Notraries list and blocks
+    // Get account details from session Account
+    private val queryCreatorCredentials =
+        IrohaCredential(
+            btcPreGenCredentials.queryCreatorCredentials.accountId, ModelUtil.loadKeypair(
+                btcPreGenCredentials.queryCreatorCredentials.pubKeyPath,
+                btcPreGenCredentials.queryCreatorCredentials.privKeyPath
+            ).get()
+        )
+
+    private val btcSessionCreatorCredentials =
+        IrohaCredential(
+            btcPreGenCredentials.btcSessionCreatorCredentials.accountId, ModelUtil.loadKeypair(
+                btcPreGenCredentials.btcSessionCreatorCredentials.pubKeyPath,
+                btcPreGenCredentials.btcSessionCreatorCredentials.privKeyPath
+            ).get()
+        )
+
+    private val btcAddressSetterCredentials =
+        IrohaCredential(
+            btcPreGenCredentials.btcAddressSetterCredentials.accountId, ModelUtil.loadKeypair(
+                btcPreGenCredentials.btcAddressSetterCredentials.pubKeyPath,
+                btcPreGenCredentials.btcAddressSetterCredentials.privKeyPath
+            ).get()
+        )
+
     private val notaryPeerListProvider = NotaryPeerListProviderImpl(
-        btcPreGenConfig.iroha,
-        irohaKeypair,
+        irohaNetwork,
+        queryCreatorCredentials,
         btcPreGenConfig.notaryListStorageAccount,
         btcPreGenConfig.notaryListSetterAccount
     )
@@ -38,13 +69,14 @@ class BtcPreGenInitialization(
         BtcPublicKeyProvider(
             wallet,
             walletFile,
-            irohaConsumer,
-            notaryPeerListProvider,
-            btcPreGenConfig.registrationAccount,
-            btcPreGenConfig.mstRegistrationAccount,
-            btcPreGenConfig.notaryAccount
+            btcPreGenConfig.iroha,
+            btcSessionCreatorCredentials,
+            btcAddressSetterCredentials,
+            btcPreGenConfig.btcAddressStorageAccount,
+            btcPreGenConfig.sessionsDomain,
+            notaryPeerListProvider
         )
-    private val irohaNetwork = IrohaNetworkImpl(btcPreGenConfig.iroha.hostname, btcPreGenConfig.iroha.port)
+
 
     /*
     Initiates listener that listens to events in trigger account.
@@ -52,10 +84,8 @@ class BtcPreGenInitialization(
      */
     fun init(): Result<Unit, Exception> {
         return IrohaChainListener(
-            btcPreGenConfig.iroha.hostname,
-            btcPreGenConfig.iroha.port,
-            btcPreGenConfig.registrationAccount,
-            irohaKeypair
+            btcPreGenConfig.iroha,
+            queryCreatorCredentials
         ).getBlockObservable().map { irohaObservable ->
             initIrohaObservable(irohaObservable)
         }
@@ -64,14 +94,13 @@ class BtcPreGenInitialization(
     private fun initIrohaObservable(irohaObservable: Observable<BlockOuterClass.Block>) {
         irohaObservable.subscribe { block ->
             getSetDetailCommands(block).forEach { command ->
-
                 if (command.setAccountDetail.accountId == btcPreGenConfig.pubKeyTriggerAccount) {
                     //add new public key to session account, if trigger account was changed
                     val sessionAccountName = command.setAccountDetail.key
                     onGenerateKey(sessionAccountName).fold(
                         { pubKey -> logger.info { "New public key $pubKey for BTC multisignature address was created" } },
                         { ex -> logger.error("Cannot generate public key for BTC multisignature address", ex) })
-                } else if (command.setAccountDetail.accountId.endsWith("btcSession")) {
+                } else if (command.setAccountDetail.accountId.endsWith(btcPreGenConfig.sessionsDomain)) {
                     //create multisignature address, if we have enough keys in session account
                     onGenerateMultiSigAddress(command.setAccountDetail.accountId).failure { ex ->
                         logger.error(
@@ -94,14 +123,13 @@ class BtcPreGenInitialization(
 
     private fun onGenerateMultiSigAddress(sessionAccount: String): Result<Unit, Exception> {
         return getAccountDetails(
-            btcPreGenConfig.iroha,
-            irohaKeypair,
+            queryCreatorCredentials,
             irohaNetwork,
             sessionAccount,
-            btcPreGenConfig.registrationAccount
+            btcAddressSetterCredentials.accountId
         ).flatMap { details ->
             val notaryKeys = details.values
-            btcPublicKeyProvider.checkAndCreateMSTAddress(notaryKeys)
+            btcPublicKeyProvider.checkAndCreateMultiSigAddress(notaryKeys)
         }
     }
 

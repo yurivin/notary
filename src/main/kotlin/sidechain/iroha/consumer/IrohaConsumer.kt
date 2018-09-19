@@ -8,6 +8,8 @@ import jp.co.soramitsu.iroha.UnsignedTx
  */
 interface IrohaConsumer {
 
+
+    // TODO: Bulat add getCreator function
     /**
      * Send transaction to Iroha and check if it is committed with status stream
      * @param utx - unsigned transaction to send
