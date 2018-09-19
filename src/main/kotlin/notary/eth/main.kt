@@ -6,42 +6,66 @@ import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.flatMap
 import config.loadConfigs
 import config.loadEthPasswords
+import model.IrohaCredential
 import mu.KLogging
 import provider.eth.EthRelayProviderIrohaImpl
 import provider.eth.EthTokensProviderImpl
 import sidechain.iroha.IrohaInitialization
+import sidechain.iroha.consumer.IrohaNetworkImpl
 import sidechain.iroha.util.ModelUtil
 
 private val logger = KLogging().logger
+
+private val PREFIX = "eth-notary"
 
 /**
  * Application entry point
  */
 fun main(args: Array<String>) {
-    val notaryConfig = loadConfigs("eth-notary", EthNotaryConfig::class.java, "/eth/notary.properties")
-    executeNotary(notaryConfig, args)
+    val notaryConfig = loadConfigs(PREFIX, EthNotaryConfig::class.java, "/eth/notary.properties")
+    val notaryCredentials = loadConfigs(PREFIX, EthNotaryCredentials::class.java, "/eth/notary_credentials.properties")
+    executeNotary(notaryConfig, notaryCredentials, args)
 }
 
-fun executeNotary(notaryConfig: EthNotaryConfig, args: Array<String> = emptyArray()) {
+fun executeNotary(
+    notaryConfig: EthNotaryConfig,
+    notaryCredentials: EthNotaryCredentials,
+    args: Array<String> = emptyArray()
+) {
     logger.info { "Run ETH notary" }
     val passwordConfig = loadEthPasswords("eth-notary", "/eth/ethereum_password.properties", args)
+    val irohaNetwork = IrohaNetworkImpl(notaryConfig.iroha.hostname, notaryConfig.iroha.port)
+    val queryCreator = IrohaCredential(
+        notaryCredentials.queryCreatorCredentials.accountId, ModelUtil.loadKeypair(
+            notaryCredentials.queryCreatorCredentials.pubKeyPath,
+            notaryCredentials.queryCreatorCredentials.privKeyPath
+        ).get()
+    )
+
+    val notaryCredential = IrohaCredential(
+        notaryCredentials.notaryCredentials.accountId, ModelUtil.loadKeypair(
+            notaryCredentials.notaryCredentials.pubKeyPath,
+            notaryCredentials.notaryCredentials.privKeyPath
+        ).get()
+    )
+
     IrohaInitialization.loadIrohaLibrary()
-        .flatMap { ModelUtil.loadKeypair(notaryConfig.iroha.pubkeyPath, notaryConfig.iroha.privkeyPath) }
-        .flatMap { keypair ->
+        .flatMap {
             val ethRelayProvider = EthRelayProviderIrohaImpl(
-                notaryConfig.iroha,
-                keypair,
-                notaryConfig.iroha.creator,
-                notaryConfig.registrationServiceIrohaAccount
+                irohaNetwork,
+                queryCreator,
+                notaryConfig.relayStorageAccount,
+                notaryConfig.relaySetterAccount
             )
             val ethTokensProvider = EthTokensProviderImpl(
-                notaryConfig.iroha,
-                keypair,
-                notaryConfig.iroha.creator,
+                irohaNetwork,
+                queryCreator,
+                notaryConfig.tokenCreatorAccount,
                 notaryConfig.tokenStorageAccount
             )
             EthNotaryInitialization(
-                keypair,
+                queryCreator,
+                notaryCredential,
                 notaryConfig,
                 passwordConfig,
                 ethRelayProvider,

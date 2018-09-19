@@ -1,7 +1,6 @@
 package notary
 
 import com.github.kittinunf.result.Result
-import com.github.kittinunf.result.map
 import config.IrohaConfig
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
@@ -12,7 +11,6 @@ import sidechain.SideChainEvent
 import sidechain.iroha.consumer.IrohaConsumerImpl
 import sidechain.iroha.consumer.IrohaConverterImpl
 import sidechain.iroha.consumer.IrohaNetworkImpl
-import sidechain.iroha.util.ModelUtil
 import java.math.BigInteger
 import java.util.concurrent.Executors
 
@@ -133,8 +131,8 @@ class NotaryImpl(
         val irohaConsumer = IrohaConsumerImpl(irohaConfig, notaryAccount)
 
         // Init Iroha Consumer pipeline
+        // convert from Notary model to Iroha model
         irohaOutput()
-            // convert from Notary model to Iroha model
             .subscribeOn(Schedulers.from(Executors.newSingleThreadExecutor()))
             .subscribe(
                 // send to Iroha network layer
@@ -151,7 +149,6 @@ class NotaryImpl(
                 // should be never called
                 { logger.error { "OnComplete called" } }
             )
-
     }
 
     /**

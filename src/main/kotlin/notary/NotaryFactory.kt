@@ -8,12 +8,15 @@ import sidechain.SideChainEvent
 
 fun createEthNotary(
     ethNotaryConfig: EthNotaryConfig,
+    notaryCredential: IrohaCredential,
+    queryCreator: IrohaCredential,
     ethEvents: Observable<SideChainEvent.PrimaryBlockChainEvent>
 ): NotaryImpl {
     return NotaryImpl(
         ethNotaryConfig.iroha,
         ethEvents,
         "ethereum",
+        queryCreator, notaryCredential,
         ethNotaryConfig.notaryListStorageAccount,
         ethNotaryConfig.notaryListSetterAccount
     )
