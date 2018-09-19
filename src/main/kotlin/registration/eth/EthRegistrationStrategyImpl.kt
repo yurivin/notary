@@ -16,10 +16,13 @@ import sidechain.iroha.consumer.IrohaConsumer
 class EthRegistrationStrategyImpl(
     private val ethFreeRelayProvider: EthFreeRelayProvider,
     irohaConsumer: IrohaConsumer,
-    mappingAccount: String,
-    creator: String
+    private val domain: String,
+    relayStorageAccount: String,
+    relaySetterAccount: String
 ) : RegistrationStrategy {
-    private val irohaAccountCreator = IrohaAccountCreator(irohaConsumer, mappingAccount, creator, "ethereum_wallet")
+    private val irohaAccountCreator =
+        IrohaAccountCreator(irohaConsumer, relayStorageAccount, relaySetterAccount, "ethereum_wallet")
+
     /**
      * Register new notary client
      * @param name - client name
@@ -29,7 +32,7 @@ class EthRegistrationStrategyImpl(
     override fun register(name: String, pubkey: String): Result<String, Exception> {
         return ethFreeRelayProvider.getRelay()
             .flatMap { freeEthWallet ->
-                irohaAccountCreator.create(freeEthWallet, name, pubkey)
+                irohaAccountCreator.create(freeEthWallet, name, domain, pubkey)
             }
     }
 

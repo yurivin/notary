@@ -2,6 +2,7 @@ package registration.eth.relay
 
 import com.github.kittinunf.result.Result
 import config.EthereumPasswords
+import model.IrohaCredential
 import mu.KLogging
 import sidechain.eth.util.DeployHelper
 import sidechain.iroha.consumer.IrohaConsumerImpl
@@ -13,18 +14,26 @@ import sidechain.iroha.util.ModelUtil
  */
 class RelayRegistration(
     private val relayRegistrationConfig: RelayRegistrationConfig,
-    relayRegistrationEthereumPasswords: EthereumPasswords
+    relayRegistrationEthereumPasswords: EthereumPasswords,
+    private val relayRegistrationCredentials: RelayRegistrationCredentials
 ) {
     /** Ethereum endpoint */
     private val deployHelper = DeployHelper(relayRegistrationConfig.ethereum, relayRegistrationEthereumPasswords)
 
+
+    private val credential = IrohaCredential(
+        relayRegistrationCredentials.relaySetterCredential.accountId, ModelUtil.loadKeypair(
+            relayRegistrationCredentials.relaySetterCredential.pubKeyPath,
+            relayRegistrationCredentials.relaySetterCredential.privKeyPath
+        ).get()
+    )
     /** Iroha endpoint */
-    private val irohaConsumer = IrohaConsumerImpl(relayRegistrationConfig.iroha)
+    private val irohaConsumer = IrohaConsumerImpl(relayRegistrationConfig.iroha, credential)
 
     /** Iroha transaction creator */
-    private val creator = relayRegistrationConfig.iroha.creator
+    private val creator = credential.accountId
 
-    private val notaryIrohaAccount = relayRegistrationConfig.notaryIrohaAccount
+    private val relayStorage = relayRegistrationConfig.relayStorageAccount
 
     /**
      * Deploy user smart contract
@@ -44,7 +53,7 @@ class RelayRegistration(
      * @return Result with string representation of hash or possible failure
      */
     fun registerRelayIroha(wallet: String, creator: String): Result<String, Exception> {
-        return ModelUtil.setAccountDetail(irohaConsumer, creator, notaryIrohaAccount, wallet, "free")
+        return ModelUtil.setAccountDetail(irohaConsumer, creator, relayStorage, wallet, "free")
     }
 
     fun deploy(): Result<Unit, Exception> {

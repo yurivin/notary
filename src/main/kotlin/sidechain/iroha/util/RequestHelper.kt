@@ -8,7 +8,6 @@ import com.github.kittinunf.result.map
 import iroha.protocol.QryResponses
 import iroha.protocol.TransactionOuterClass
 import jp.co.soramitsu.iroha.ModelQueryBuilder
-import model.IrohaAccount
 import model.IrohaCredential
 import sidechain.iroha.consumer.IrohaNetwork
 import java.math.BigInteger

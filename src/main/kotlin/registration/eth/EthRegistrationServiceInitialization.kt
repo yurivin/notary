@@ -2,6 +2,7 @@ package registration.eth
 
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.map
+import model.IrohaCredential
 import mu.KLogging
 import provider.eth.EthFreeRelayProvider
 import registration.RegistrationServiceEndpoint
@@ -13,47 +14,54 @@ import sidechain.iroha.util.ModelUtil
  *
  * @param ethRegistrationConfig - configurations of registration service
  */
-class EthRegistrationServiceInitialization(private val ethRegistrationConfig: EthRegistrationConfig) {
+class EthRegistrationServiceInitialization(
+    private val ethRegistrationCredentials: EthRegistrationCredentials,
+    private val ethRegistrationConfig: EthRegistrationConfig
+) {
 
     /**
      * Init Registration Service
      */
     fun init(): Result<Unit, Exception> {
         logger.info {
-            "Start registration service init with iroha creator: ${ethRegistrationConfig.iroha.creator}"
+            "Start registration service init with iroha creator: ${ethRegistrationCredentials.registrationServiceAccount.accountId}"
         }
         return Result.of {
-            ModelUtil.loadKeypair(
-                ethRegistrationConfig.iroha.pubkeyPath,
-                ethRegistrationConfig.iroha.privkeyPath
+            IrohaCredential(
+                ethRegistrationCredentials.registrationServiceAccount.accountId, ModelUtil.loadKeypair(
+                    ethRegistrationCredentials.registrationServiceAccount.pubKeyPath,
+                    ethRegistrationCredentials.registrationServiceAccount.privKeyPath
+                ).get()
             )
-                .map { keyPair ->
-                    Pair(
-                        EthFreeRelayProvider(
-                            ethRegistrationConfig.iroha,
-                            keyPair,
-                            ethRegistrationConfig.mappingAccount,
-                            ethRegistrationConfig.relayRegistrationIrohaAccount
-                        ), IrohaConsumerImpl(ethRegistrationConfig.iroha)
-                    )
-                }
-                .map { (ethFreeRelayProvider, irohaConsumer) ->
-                    EthRegistrationStrategyImpl(
-                        ethFreeRelayProvider,
-                        irohaConsumer,
-                        ethRegistrationConfig.mappingAccount,
-                        ethRegistrationConfig.iroha.creator
-                    )
-                }
-                .map { registrationStrategy ->
-                    RegistrationServiceEndpoint(
-                        ethRegistrationConfig.port,
-                        registrationStrategy
-                    )
-                }
-            Unit
         }
+            .map { credential ->
+                Pair(
+                    EthFreeRelayProvider(
+                        ethRegistrationConfig.iroha,
+                        credential,
+                        ethRegistrationConfig.relayStorageAccount,
+                        ethRegistrationConfig.relaySetterAccount
+                    ), IrohaConsumerImpl(ethRegistrationConfig.iroha, credential)
+                )
+            }
+            .map { (ethFreeRelayProvider, irohaConsumer) ->
+                EthRegistrationStrategyImpl(
+                    ethFreeRelayProvider,
+                    irohaConsumer,
+                    ethRegistrationConfig.defaultDomain,
+                    ethRegistrationConfig.relayStorageAccount,
+                    ethRegistrationCredentials.registrationServiceAccount.accountId
+                )
+            }
+            .map { registrationStrategy ->
+                RegistrationServiceEndpoint(
+                    ethRegistrationConfig.port,
+                    registrationStrategy
+                )
+            }.map { Unit }
+
     }
+
 
     /**
      * Logger

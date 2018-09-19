@@ -9,11 +9,14 @@ interface EthRegistrationConfig {
     /** Port of registration service */
     val port: Int
 
+    /** Iroha domain for clients with default client role*/
+    val defaultDomain: String
+
     /** Iroha account of relay registration service */
-    val relayRegistrationIrohaAccount: String
+    val relaySetterAccount: String
 
     /** Iroha account for mapping relay addresses and Iroha accounts */
-    val mappingAccount: String
+    val relayStorageAccount: String
 
     /** Iroha configuration */
     val iroha: IrohaConfig
