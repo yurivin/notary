@@ -8,6 +8,7 @@ import config.EthereumPasswords
 import config.IrohaConfig
 import iroha.protocol.TransactionOuterClass.Transaction
 import jp.co.soramitsu.iroha.Keypair
+import model.IrohaCredential
 import mu.KLogging
 import org.web3j.crypto.ECKeyPair
 import provider.eth.EthTokensProvider
@@ -23,11 +24,11 @@ class NotaryException(reason: String) : Exception(reason)
  * Class performs effective implementation of refund strategy for Ethereum
  */
 class EthRefundStrategyImpl(
-    val irohaConfig: IrohaConfig,
+    private val queryCreator: IrohaCredential,
+    private val notaryAccount: String,
     val irohaNetwork: IrohaNetwork,
     ethereumConfig: EthereumConfig,
     ethereumPasswords: EthereumPasswords,
-    private val keypair: Keypair,
     private val whitelistSetter: String,
     private val tokensProvider: EthTokensProvider
 ) : EthRefundStrategy {
@@ -37,7 +38,7 @@ class EthRefundStrategyImpl(
     override fun performRefund(request: EthRefundRequest): EthNotaryResponse {
         logger.info("Check tx ${request.irohaTx} for refund")
 
-        return ModelUtil.getTransaction(irohaNetwork, irohaConfig.creator, keypair, request.irohaTx)
+        return ModelUtil.getTransaction(irohaNetwork, queryCreator.accountId, queryCreator.keyPair, request.irohaTx)
             .flatMap { checkTransaction(it, request) }
             .flatMap { makeRefund(it) }
             .fold({ it },
@@ -85,7 +86,7 @@ class EthRefundStrategyImpl(
                         commands.hasTransferAsset() -> {
                     val destAccount = commands.transferAsset.destAccountId
                     // TODO: change this to notary account/ not creator?
-                    if (destAccount != irohaConfig.creator)
+                    if (destAccount != notaryAccount)
                         throw NotaryException("Refund - check transaction. Destination account is wrong '$destAccount'")
 
                     val amount = commands.transferAsset.amount
@@ -150,8 +151,7 @@ class EthRefundStrategyImpl(
      */
     private fun checkWithdrawalAddress(srcAccountId: String, address: String): Result<Boolean, Exception> {
         return getAccountDetails(
-            irohaConfig,
-            keypair,
+            queryCreator,
             irohaNetwork,
             srcAccountId,
             whitelistSetter

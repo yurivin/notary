@@ -4,6 +4,7 @@ import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.map
 import io.reactivex.Observable
+import model.IrohaCredential
 import mu.KLogging
 import notary.createBtcNotary
 import org.bitcoinj.core.BlockChain
@@ -19,10 +20,12 @@ import java.io.File
 /**
  * Initialization of Bitcoin Notary
  * @param btcNotaryConfig
- * @param btcAddressesProvider
+ * @param btcRegisteredAddressesProvider
  */
 class BtcNotaryInitialization(
     private val btcNotaryConfig: BtcNotaryConfig,
+    private val notaryCredential: IrohaCredential,
+    private val queryCreator: IrohaCredential,
     private val btcRegisteredAddressesProvider: BtcRegisteredAddressesProvider
 ) {
     /**
@@ -37,7 +40,7 @@ class BtcNotaryInitialization(
         }.map { wallet ->
             getBtcEvents(wallet, btcNotaryConfig.bitcoin.confidenceLevel)
         }.map { btcEvents ->
-            val notary = createBtcNotary(btcNotaryConfig, btcEvents)
+            val notary = createBtcNotary(btcNotaryConfig, notaryCredential, queryCreator, btcEvents)
             notary.initIrohaConsumer().failure { ex -> throw ex }
             Unit
         }

@@ -9,14 +9,17 @@ interface BtcNotaryConfig {
 
     val bitcoin: BitcoinConfig
 
-    /** ? */
-    val mstRegistrationAccount: String
-
     /** Iroha account to store notary peer list  */
     val notaryListStorageAccount: String
 
     /** Iroha account to set notary peer list */
     val notaryListSetterAccount: String
 
-    val registrationAccount: String
+    /** Account with registered accounts */
+    val btcRegisteredAddressStorageAccount: String
+
+    /** Registration Account */
+    val btcRegisteredAddressSetterAccount: String
+
+
 }

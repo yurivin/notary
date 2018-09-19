@@ -5,11 +5,13 @@ import com.github.kittinunf.result.map
 import config.IrohaConfig
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
+import model.IrohaCredential
 import mu.KLogging
 import provider.NotaryPeerListProviderImpl
 import sidechain.SideChainEvent
 import sidechain.iroha.consumer.IrohaConsumerImpl
 import sidechain.iroha.consumer.IrohaConverterImpl
+import sidechain.iroha.consumer.IrohaNetworkImpl
 import sidechain.iroha.util.ModelUtil
 import java.math.BigInteger
 import java.util.concurrent.Executors
@@ -26,21 +28,21 @@ class NotaryImpl(
     private val irohaConfig: IrohaConfig,
     private val primaryChainEvents: Observable<SideChainEvent.PrimaryBlockChainEvent>,
     private val domain: String,
+    queryCreator: IrohaCredential,
+    private val notaryAccount: IrohaCredential,
     notaryListStorageAccount: String,
     notaryListSetterAccount: String
 ) : Notary {
 
-    val keypair = ModelUtil.loadKeypair(irohaConfig.pubkeyPath, irohaConfig.privkeyPath).get()
+    private val irohaNetwork = IrohaNetworkImpl(irohaConfig.hostname, irohaConfig.port)
 
     private val peerListProvider = NotaryPeerListProviderImpl(
-        irohaConfig,
-        keypair,
+        irohaNetwork,
+        queryCreator,
         notaryListStorageAccount,
         notaryListSetterAccount
     )
 
-    /** Notary account in Iroha */
-    private val creator = irohaConfig.creator
 
     /**
      * Handles primary chain deposit event. Notaries create the ordered bunch of
@@ -63,20 +65,20 @@ class NotaryImpl(
         return IrohaOrderedBatch(
             arrayListOf(
                 IrohaTransaction(
-                    creator,
+                    notaryAccount.accountId,
                     time,
                     quorum,
                     arrayListOf(
                         // insert into Iroha account information for rollback
                         IrohaCommand.CommandSetAccountDetail(
-                            creator,
+                            notaryAccount.accountId,
                             "last_tx",
                             hash
                         )
                     )
                 ),
                 IrohaTransaction(
-                    creator,
+                    notaryAccount.accountId,
                     time,
                     quorum,
                     arrayListOf(
@@ -85,7 +87,7 @@ class NotaryImpl(
                             amount
                         ),
                         IrohaCommand.CommandTransferAsset(
-                            creator,
+                            notaryAccount.accountId,
                             account,
                             "$asset#$domain",
                             from,
@@ -128,31 +130,28 @@ class NotaryImpl(
      */
     override fun initIrohaConsumer(): Result<Unit, Exception> {
         logger.info { "Init Iroha consumer" }
-        return ModelUtil.loadKeypair(irohaConfig.pubkeyPath, irohaConfig.privkeyPath)
-            .map { keyPair ->
-                val irohaConsumer = IrohaConsumerImpl(irohaConfig)
+        val irohaConsumer = IrohaConsumerImpl(irohaConfig, notaryAccount)
 
-                // Init Iroha Consumer pipeline
-                irohaOutput()
-                    // convert from Notary model to Iroha model
-                    .subscribeOn(Schedulers.from(Executors.newSingleThreadExecutor()))
-                    .subscribe(
-                        // send to Iroha network layer
-                        { batch ->
-                            val lst = IrohaConverterImpl().convert(batch)
-                            irohaConsumer.sendAndCheck(lst)
-                                .fold(
-                                    { logger.info { "Send to Iroha success" } },
-                                    { ex -> logger.error("Send failure", ex) }
-                                )
-                        },
-                        // on error
-                        { ex -> logger.error("OnError called", ex) },
-                        // should be never called
-                        { logger.error { "OnComplete called" } }
-                    )
-                Unit
-            }
+        // Init Iroha Consumer pipeline
+        irohaOutput()
+            // convert from Notary model to Iroha model
+            .subscribeOn(Schedulers.from(Executors.newSingleThreadExecutor()))
+            .subscribe(
+                // send to Iroha network layer
+                { batch ->
+                    val lst = IrohaConverterImpl().convert(batch)
+                    irohaConsumer.sendAndCheck(lst)
+                        .fold(
+                            { logger.info { "Send to Iroha success" } },
+                            { ex -> logger.error("Send failure", ex) }
+                        )
+                },
+                // on error
+                { ex -> logger.error("OnError called", ex) },
+                // should be never called
+                { logger.error { "OnComplete called" } }
+            )
+
     }
 
     /**
