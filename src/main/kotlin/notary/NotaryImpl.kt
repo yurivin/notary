@@ -128,28 +128,29 @@ class NotaryImpl(
      */
     override fun initIrohaConsumer(): Result<Unit, Exception> {
         logger.info { "Init Iroha consumer" }
-        val irohaConsumer = IrohaConsumerImpl(irohaConfig, notaryAccount)
-
-        // Init Iroha Consumer pipeline
-        // convert from Notary model to Iroha model
-        irohaOutput()
-            .subscribeOn(Schedulers.from(Executors.newSingleThreadExecutor()))
-            .subscribe(
-                // send to Iroha network layer
-                { batch ->
-                    val lst = IrohaConverterImpl().convert(batch)
-                    irohaConsumer.sendAndCheck(lst)
-                        .fold(
-                            { logger.info { "Send to Iroha success" } },
-                            { ex -> logger.error("Send failure", ex) }
-                        )
-                },
-                // on error
-                { ex -> logger.error("OnError called", ex) },
-                // should be never called
-                { logger.error { "OnComplete called" } }
-            )
-
+        return Result.of {
+            val irohaConsumer = IrohaConsumerImpl(irohaConfig, notaryAccount)
+            // Init Iroha Consumer pipeline
+            // convert from Notary model to Iroha model
+            irohaOutput()
+                .subscribeOn(Schedulers.from(Executors.newSingleThreadExecutor()))
+                .subscribe(
+                    // send to Iroha network layer
+                    { batch ->
+                        val lst = IrohaConverterImpl().convert(batch)
+                        irohaConsumer.sendAndCheck(lst)
+                            .fold(
+                                { logger.info { "Send to Iroha success" } },
+                                { ex -> logger.error("Send failure", ex) }
+                            )
+                    },
+                    // on error
+                    { ex -> logger.error("OnError called", ex) },
+                    // should be never called
+                    { logger.error { "OnComplete called" } }
+                )
+            Unit
+        }
     }
 
     /**
