@@ -17,14 +17,11 @@ class RelayEthRegistrationConfigTest {
             loadConfigs("relay-registration", RelayRegistrationConfig::class.java, "/eth/relay_registration.properties")
 
         assertEquals(10, relayRegistrationConfig.number)
-        assertEquals("notary_red@notary", relayRegistrationConfig.notaryIrohaAccount)
+        assertEquals("notary_red@notary", relayRegistrationConfig.relayStorageAccount)
         assertEquals("0x57dd50c6b4ec7a33ee3bb5056bf38856e181684c", relayRegistrationConfig.ethMasterWallet)
 
         assertEquals("d3-iroha", relayRegistrationConfig.iroha.hostname)
         assertEquals(50051, relayRegistrationConfig.iroha.port)
-        assertEquals("eth_registration_service_red@notary", relayRegistrationConfig.iroha.creator)
-        assertEquals("deploy/iroha/keys/admin@notary.pub", relayRegistrationConfig.iroha.pubkeyPath)
-        assertEquals("deploy/iroha/keys/admin@notary.priv", relayRegistrationConfig.iroha.privkeyPath)
 
         assertEquals("http://d3-eth-node0:8545", relayRegistrationConfig.ethereum.url)
         assertEquals("deploy/ethereum/keys/ropsten.key", relayRegistrationConfig.ethereum.credentialsPath)

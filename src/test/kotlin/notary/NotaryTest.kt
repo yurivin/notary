@@ -18,13 +18,11 @@ class NotaryTest {
 
     /** Configuration for Iroha */
     private val irohaConfig = mock<IrohaConfig>() {
-        on { creator } doReturn "iroha_creator"
-        on { pubkeyPath } doReturn "deploy/iroha/keys/admin@notary.pub"
-        on { privkeyPath } doReturn "deploy/iroha/keys/admin@notary.priv"
         on { port } doReturn 8080
         on { hostname } doReturn "localhost"
     }
 
+    // TODO: add more values to this config
     /** Configuration for notary */
     private val notaryConfig = mock<EthNotaryConfig>() {
         on { iroha } doReturn irohaConfig

@@ -11,7 +11,6 @@ interface RefundConfig {
 
 /** Configuration of notary */
 interface EthNotaryConfig {
-
     /**
      * Account to store relay addresses
      */

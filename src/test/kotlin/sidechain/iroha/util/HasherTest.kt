@@ -2,10 +2,12 @@ package sidechain.iroha.util
 
 import com.github.kittinunf.result.failure
 import config.TestConfig
+import config.TestCredentials
 import config.loadConfigs
 import jp.co.soramitsu.iroha.Blob
 import jp.co.soramitsu.iroha.ModelTransactionBuilder
 import jp.co.soramitsu.iroha.iroha
+import model.IrohaCredential
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import sidechain.iroha.IrohaInitialization
@@ -19,13 +21,15 @@ class HasherTest {
     }
 
     /** Test configurations */
-    val testConfig = loadConfigs("test", TestConfig::class.java, "/test.properties")
+    private val testCredentials = loadConfigs("test", TestCredentials::class.java, "/test_credentials.properties")
 
-    /** Test keypair */
-    val keypair = ModelUtil.loadKeypair(
-        testConfig.iroha.pubkeyPath,
-        testConfig.iroha.privkeyPath
-    ).get()
+    private val account = IrohaCredential(
+        testCredentials.accountCredentials.accountId, ModelUtil.loadKeypair(
+            testCredentials.accountCredentials.pubKeyPath,
+            testCredentials.accountCredentials.privKeyPath
+        ).get()
+    )
+
 
     /**
      * @given protobuf bytes of transaction
@@ -36,12 +40,12 @@ class HasherTest {
     fun testTransferAssetHash() {
 
         val tx = ModelTransactionBuilder()
-            .creatorAccountId("creator@test")
+            .creatorAccountId(account.accountId)
             .createdTime(ModelUtil.getCurrentTime())
             .quorum(1)
             .transferAsset("from@test", "to@test", "coin#test", "descr", "123")
             .build()
-            .signAndAddSignature(keypair)
+            .signAndAddSignature(account.keyPair)
         val bytes = tx.finish().blob().blob().toByteArray()
 
         val expectedHash = tx.hash().hex()

@@ -149,6 +149,7 @@ class NotaryImpl(
                 // should be never called
                 { logger.error { "OnComplete called" } }
             )
+
     }
 
     /**
