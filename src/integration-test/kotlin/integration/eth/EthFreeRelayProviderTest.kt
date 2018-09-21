@@ -21,10 +21,7 @@ class EthFreeRelayProviderTest {
 
 
     /** Iroha consumer */
-    val irohaConsumer = IrohaConsumerImpl(testConfig.iroha)
-
-    /** Iroha transaction creator */
-    val creator = testConfig.iroha.creator
+    val irohaConsumer = IrohaConsumerImpl(testConfig.iroha, integrationHelper.testCredential)
 
     /**
      * @given Iroha network running and Iroha master account with attribute ["eth_wallet", "free"] set by master account
@@ -35,15 +32,21 @@ class EthFreeRelayProviderTest {
     fun getFreeWallet() {
         val ethFreeWallet = "eth_free_wallet_stub"
 
-        setAccountDetail(irohaConsumer, creator, testConfig.notaryIrohaAccount, ethFreeWallet, "free")
+        setAccountDetail(
+            irohaConsumer,
+            integrationHelper.testCredential.accountId,
+            testConfig.notaryIrohaAccount,
+            ethFreeWallet,
+            "free"
+        )
             .failure { fail(it) }
 
         val freeWalletsProvider =
             EthFreeRelayProvider(
                 testConfig.iroha,
-                integrationHelper.irohaKeyPair,
+                integrationHelper.testCredential,
                 testConfig.notaryIrohaAccount,
-                creator
+                integrationHelper.testCredential.accountId
             )
         val result = freeWalletsProvider.getRelay()
 
@@ -60,7 +63,10 @@ class EthFreeRelayProviderTest {
         val wrongMasterAccount = "wrong@account"
 
         val freeWalletsProvider =
-            EthFreeRelayProvider(testConfig.iroha, integrationHelper.irohaKeyPair, creator, wrongMasterAccount)
+            EthFreeRelayProvider(
+                testConfig.iroha, integrationHelper.testCredential,
+                testConfig.notaryIrohaAccount, wrongMasterAccount
+            )
         freeWalletsProvider.getRelay()
             .success { fail { "should return Exception" } }
     }

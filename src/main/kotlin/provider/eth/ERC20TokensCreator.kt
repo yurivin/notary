@@ -13,7 +13,7 @@ import sidechain.iroha.util.ModelUtil
  * @param irohaConfig - Iroha configuration
  * @param tokenCreatorAccount - account that is a creator of assets, and credentials
  * @param tokenStorageAccount - tokenStorageAccount that holds tokens in mappingAccount account
- */w
+ */
 class ERC20TokensCreator(private val irohaConfig: IrohaConfig,
                          private val tokenCreatorAccount: IrohaCredential,
                          private val tokenStorageAccount: String) {

@@ -35,7 +35,7 @@ fun executeTokenRegistration(
 ) {
     logger.info { "Run ERC20 tokens registration" }
     IrohaInitialization.loadIrohaLibrary()
-        .flatMap { keypair -> ERC20TokenRegistration(tokenRegistrationCredentials, tokenRegistrationConfig).init() }
+        .flatMap {ERC20TokenRegistration(tokenRegistrationCredentials, tokenRegistrationConfig).init() }
         .fold({ logger.info { "ERC20 tokens were successfully registered" } }, { ex ->
             logger.error("Cannot run ERC20 token registration", ex)
             System.exit(1)

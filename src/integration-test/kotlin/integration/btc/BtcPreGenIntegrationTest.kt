@@ -31,13 +31,13 @@ class BtcPreGenIntegrationTest {
 
     private val triggerProvider = TriggerProvider(
         btcPkPreGenConfig.iroha,
-        btcPkPreGenConfig.pubKeyTriggerAccount,
-        btcPkPreGenConfig.registrationAccount
+        integrationHelper.testCredential,
+        btcPkPreGenConfig.pubKeyTriggerAccount
     )
     private val btcKeyGenSessionProvider = BtcSessionProvider(
         btcPkPreGenConfig.iroha,
-        btcPkPreGenConfig.registrationAccount,
-        integrationHelper.irohaKeyPair
+        integrationHelper.testCredential,
+        btcPkPreGenConfig.sessionsDomain
     )
 
     /**
@@ -51,7 +51,7 @@ class BtcPreGenIntegrationTest {
     @Test
     fun testGenerateKey() {
         integrationHelper.addNotary("test_notary", "test_notary_address")
-        async { executePreGeneration(btcPkPreGenConfig) }
+        async { executePreGeneration(btcPkPreGenConfig, integrationHelper.configHelper.btcPreGenCredentials) }
         Thread.sleep(WAIT_PREGEN_INIT_MILLIS)
         val sessionAccountName = String.getRandomString(9)
         btcKeyGenSessionProvider.createPubKeyCreationSession(sessionAccountName)
@@ -61,8 +61,8 @@ class BtcPreGenIntegrationTest {
         Thread.sleep(WAIT_PREGEN_PROCESS_MILLIS)
         val sessionDetails =
             integrationHelper.getAccountDetails(
-                "$sessionAccountName@btcSession",
-                btcPkPreGenConfig.registrationAccount
+                "$sessionAccountName@${btcPkPreGenConfig.sessionsDomain}",
+                integrationHelper.configHelper.btcPreGenCredentials.btcSessionCreatorCredentials.accountId
             )
         val pubKey = sessionDetails.values.iterator().next()
         assertNotNull(pubKey)
@@ -70,8 +70,8 @@ class BtcPreGenIntegrationTest {
         assertNotNull(wallet.issuedReceiveKeys.find { ecKey -> ecKey.publicKeyAsHex == pubKey })
         val notaryAccountDetails =
             integrationHelper.getAccountDetails(
-                btcPkPreGenConfig.notaryAccount,
-                btcPkPreGenConfig.mstRegistrationAccount
+                btcPkPreGenConfig.btcAddressStorageAccount,
+                integrationHelper.configHelper.btcPreGenCredentials.btcAddressSetterCredentials.accountId
             )
         val expectedMsAddress = createMstAddress(sessionDetails.values)
         assertEquals("free", notaryAccountDetails.get(expectedMsAddress))

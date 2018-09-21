@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import provider.eth.EthTokenInfo
 import provider.eth.EthTokensProviderImpl
+import sidechain.iroha.consumer.IrohaNetworkImpl
 import token.executeTokenRegistration
 import util.getRandomString
 import java.io.File
@@ -22,11 +23,16 @@ class ERC20TokenRegistrationTest {
     private val tokenRegistrationConfig =
         integrationHelper.configHelper.createERC20TokenRegistrationConfig(tokensFilePath)
 
-    private val ethTokensProvider = EthTokensProviderImpl(
-        integrationHelper.configHelper.createIrohaConfig(),
-        integrationHelper.irohaKeyPair,
-        tokenRegistrationConfig.tokenStorageAccount,
-        tokenRegistrationConfig.tokenSetterAccount
+    private val irohaConfig = integrationHelper.configHelper.createIrohaConfig()
+    private val irohaNetwork = IrohaNetworkImpl(irohaConfig.hostname, irohaConfig.port)
+
+    private val registrationCredential = integrationHelper.configHelper.erC20TokenRegistrationCredentials
+
+    private val ethTokensProvider =  EthTokensProviderImpl(
+        irohaNetwork,
+        integrationHelper.testCredential,
+        registrationCredential.tokenCreatorAccount.accountId,
+        tokenRegistrationConfig.tokenStorageAccount
     )
 
     @AfterEach
@@ -45,7 +51,7 @@ class ERC20TokenRegistrationTest {
     fun testTokenRegistration() {
         val tokens = createRandomTokens()
         createTokensFile(tokens, tokensFilePath)
-        executeTokenRegistration(tokenRegistrationConfig)
+        executeTokenRegistration(tokenRegistrationConfig, registrationCredential)
         ethTokensProvider.getTokens().fold({ tokensFromProvider ->
             assertEquals(
                 tokens,
@@ -64,7 +70,7 @@ class ERC20TokenRegistrationTest {
     @Test
     fun testTokenRegistrationEmptyTokenFile() {
         createTokensFile(HashMap(), tokensFilePath)
-        executeTokenRegistration(tokenRegistrationConfig)
+        executeTokenRegistration(tokenRegistrationConfig, registrationCredential)
         ethTokensProvider.getTokens().fold({ tokensFromProvider ->
             assertTrue(tokensFromProvider.isEmpty())
         }, { ex -> fail("cannot fetch tokens", ex) })

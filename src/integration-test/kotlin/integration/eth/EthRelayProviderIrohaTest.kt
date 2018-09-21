@@ -11,6 +11,7 @@ import org.junit.jupiter.api.fail
 import provider.eth.EthRelayProviderIrohaImpl
 import sidechain.iroha.consumer.IrohaConsumerImpl
 import sidechain.iroha.consumer.IrohaConverterImpl
+import sidechain.iroha.consumer.IrohaNetworkImpl
 import sidechain.iroha.util.ModelUtil
 
 /**
@@ -21,15 +22,10 @@ class EthRelayProviderIrohaTest {
 
     val integrationHelper = IntegrationHelperUtil()
     val testConfig = integrationHelper.configHelper.testConfig
+    val irohaNetwork = IrohaNetworkImpl(testConfig.iroha.hostname, testConfig.iroha.port)
 
     /** Creator of txs in Iroha */
-    val creator: String = testConfig.iroha.creator
-
-    /** Iroha keypair */
-    val keypair = ModelUtil.loadKeypair(
-        testConfig.iroha.pubkeyPath,
-        testConfig.iroha.privkeyPath
-    ).get()
+    val creator: String = integrationHelper.testCredential.accountId
 
     /** Iroha account that has set details */
     val detailSetter = testConfig.registrationIrohaAccount
@@ -57,7 +53,7 @@ class EthRelayProviderIrohaTest {
 
         val valid = entries.filter { it.value != "free" }
 
-        val masterAccount = testConfig.registrationIrohaAccount
+        val masterAccount = testConfig.notaryIrohaAccount
 
         val irohaOutput = IrohaTransaction(
             creator,
@@ -75,12 +71,12 @@ class EthRelayProviderIrohaTest {
 
         val tx = IrohaConverterImpl().convert(irohaOutput)
 
-        IrohaConsumerImpl(testConfig.iroha).sendAndCheck(tx)
+        IrohaConsumerImpl(testConfig.iroha, integrationHelper.testCredential).sendAndCheck(tx)
             .failure { ex -> fail(ex) }
 
         EthRelayProviderIrohaImpl(
-            testConfig.iroha,
-            keypair,
+            irohaNetwork,
+            integrationHelper.testCredential,
             masterAccount,
             creator
         ).getRelays()
@@ -97,7 +93,12 @@ class EthRelayProviderIrohaTest {
      */
     @Test
     fun testEmptyStorage() {
-        EthRelayProviderIrohaImpl(testConfig.iroha, keypair, detailSetter, detailHolder).getRelays()
+        EthRelayProviderIrohaImpl(
+            irohaNetwork,
+            integrationHelper.testCredential,
+            detailSetter,
+            detailHolder
+        ).getRelays()
             .fold(
                 {
                     assert(it.isEmpty())

@@ -1,5 +1,6 @@
 package integration.iroha
 
+import config.TestCredentials
 import config.loadConfigs
 import jp.co.soramitsu.iroha.Blob
 import jp.co.soramitsu.iroha.ModelCrypto
@@ -8,6 +9,7 @@ import jp.co.soramitsu.iroha.iroha
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.coroutines.experimental.withTimeout
+import model.IrohaCredential
 import notary.IrohaCommand
 import notary.IrohaOrderedBatch
 import notary.IrohaTransaction
@@ -30,11 +32,18 @@ class IrohaBatchTest {
         loadConfigs("test", EthNotaryConfig::class.java)
     }
 
-    private val tester = "test@notary"
+    private val testCredentialsConfig = loadConfigs("test", TestCredentials::class.java, "/test_credentials.properties")
+    private val testCredential = IrohaCredential(
+        testCredentialsConfig.accountCredentials.accountId, ModelUtil.loadKeypair(
+            testCredentialsConfig.accountCredentials.pubKeyPath,
+            testCredentialsConfig.accountCredentials.privKeyPath
+        ).get()
+    )
 
-    private val keypair by lazy {
-        ModelUtil.loadKeypair(testConfig.iroha.pubkeyPath, testConfig.iroha.privkeyPath).get()
-    }
+
+    private val tester = testCredential.accountId
+
+    private val keypair = testCredential.keyPair
 
     private val counter = BigInteger.ONE
 
@@ -64,7 +73,7 @@ class IrohaBatchTest {
         val user = randomString()
         val asset_name = randomString()
 
-        val irohaConsumer = IrohaConsumerImpl(testConfig.iroha)
+        val irohaConsumer = IrohaConsumerImpl(testConfig.iroha, testCredential)
 
         val txList =
             listOf(
@@ -126,9 +135,8 @@ class IrohaBatchTest {
         val hashes = lst.map { it.hash().hex() }
 
         val listener = IrohaChainListener(
-            testConfig.iroha.hostname,
-            testConfig.iroha.port,
-            tester, keypair
+            testConfig.iroha,
+            testCredential
         )
         val blockHashes = async {
             listener.getBlock().payload.transactionsList.map {
@@ -238,7 +246,7 @@ class IrohaBatchTest {
         val user = randomString()
         val asset_name = randomString()
 
-        val irohaConsumer = IrohaConsumerImpl(testConfig.iroha)
+        val irohaConsumer = IrohaConsumerImpl(testConfig.iroha, testCredential)
 
         val txList =
             listOf(
@@ -316,9 +324,8 @@ class IrohaBatchTest {
 
 
         val listener = IrohaChainListener(
-            testConfig.iroha.hostname,
-            testConfig.iroha.port,
-            tester, keypair
+            testConfig.iroha,
+            testCredential
         )
         val blockHashes = async {
             listener.getBlock().payload.transactionsList.map {

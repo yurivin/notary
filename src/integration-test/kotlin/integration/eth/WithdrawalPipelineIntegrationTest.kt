@@ -41,16 +41,25 @@ class WithdrawalPipelineIntegrationTest {
     /** Ethereum test address where we want to withdraw to */
     private val toAddress = integrationHelper.configHelper.testConfig.ethTestAccount
 
-    /** Notary account in Iroha */
-    private val notaryAccount = notaryConfig.iroha.creator
+    /** Notary account in Iroha
+     * TODO: change to more appropriate account
+     * */
+    private val notaryAccount = notaryConfig.relaySetterAccount
 
     init {
         integrationHelper.runEthNotary(notaryConfig)
         async {
-            registration.eth.executeRegistration(registrationConfig)
+            registration.eth.executeRegistration(
+                registrationConfig,
+                integrationHelper.configHelper.ethRegistrationCredentials
+            )
         }
         async {
-            withdrawalservice.executeWithdrawal(withdrawalServiceConfig, passwordConfig)
+            withdrawalservice.executeWithdrawal(
+                withdrawalServiceConfig,
+                integrationHelper.configHelper.ethWithdrawalCredentials,
+                passwordConfig
+            )
         }
         Thread.sleep(3_000)
     }

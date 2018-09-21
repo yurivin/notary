@@ -19,17 +19,19 @@ class BtcRegistrationIntegrationTest {
     private val integrationHelper = IntegrationHelperUtil()
 
     private val config = integrationHelper.configHelper.createBtcRegistrationConfig()
+    private val btcRegistrationCredentials = integrationHelper.configHelper.btcRegistrationCredentials
+
 
     init {
-        executeRegistration(config)
+        executeRegistration(config, btcRegistrationCredentials)
         Thread.sleep(10_000)
     }
 
     private val btcTakenAddressesProvider = BtcRegisteredAddressesProvider(
         config.iroha,
-        integrationHelper.irohaKeyPair,
-        config.registrationAccount,
-        config.iroha.creator
+        integrationHelper.testCredential,
+        config.btcRegisteredAddressStorageAccount,
+        btcRegistrationCredentials.btcRegisteredAddressesSetterCredential.accountId
     )
 
     /**

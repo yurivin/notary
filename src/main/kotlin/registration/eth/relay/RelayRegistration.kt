@@ -15,7 +15,7 @@ import sidechain.iroha.util.ModelUtil
 class RelayRegistration(
     private val relayRegistrationConfig: RelayRegistrationConfig,
     relayRegistrationEthereumPasswords: EthereumPasswords,
-    private val relayRegistrationCredentials: RelayRegistrationCredentials
+    relayRegistrationCredentials: RelayRegistrationCredentials
 ) {
     /** Ethereum endpoint */
     private val deployHelper = DeployHelper(relayRegistrationConfig.ethereum, relayRegistrationEthereumPasswords)
