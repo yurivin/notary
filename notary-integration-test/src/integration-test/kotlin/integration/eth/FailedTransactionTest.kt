@@ -16,6 +16,8 @@ class FailedTransactionTest {
     val integrationHelper = IntegrationHelperUtil()
 
     init {
+        integrationHelper.sendMultitransaction()
+        
         integrationHelper.runEthNotary()
 
         integrationHelper.lockEthMasterSmartcontract()

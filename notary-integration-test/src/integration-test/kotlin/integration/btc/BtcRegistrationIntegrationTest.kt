@@ -5,12 +5,9 @@ import jp.co.soramitsu.iroha.ModelCrypto
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
 import model.IrohaCredential
-import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.fail
 import provider.btc.address.BtcAddressesProvider
 import provider.btc.address.BtcRegisteredAddressesProvider
 import registration.IrohaAccountCreator
@@ -61,6 +58,11 @@ class BtcRegistrationIntegrationTest {
         integrationHelper.accountHelper.notaryAccount.accountId
     )
 
+    @BeforeAll
+    fun setUp() {
+        integrationHelper.sendMultitransaction()
+    }
+
     @AfterAll
     fun dropDown() {
         integrationHelper.close()
@@ -77,6 +79,7 @@ class BtcRegistrationIntegrationTest {
     @Test
     fun testRegistration() {
         integrationHelper.preGenBtcAddress()
+        integrationHelper.sendMultitransaction()
         val keypair = ModelCrypto().generateKeypair()
         val userName = String.getRandomString(9)
         val res = khttp.post(
@@ -108,6 +111,8 @@ class BtcRegistrationIntegrationTest {
         for (i in 1..addressesToRegister) {
             integrationHelper.preGenBtcAddress()
         }
+        integrationHelper.sendMultitransaction()
+
         for (i in 1..addressesToRegister) {
             val keypair = ModelCrypto().generateKeypair()
             val userName = String.getRandomString(9)

@@ -1,10 +1,7 @@
 package integration.eth
 
 import integration.helper.IntegrationHelperUtil
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.*
 import provider.eth.ETH_PRECISION
 import sidechain.iroha.CLIENT_DOMAIN
 import util.getRandomString
@@ -23,6 +20,7 @@ class DepositIntegrationTest {
     private val etherAssetId = "ether#ethereum"
 
     init {
+        integrationHelper.sendMultitransaction()
         // run notary
         integrationHelper.runEthNotary()
         integrationHelper.lockEthMasterSmartcontract()
@@ -112,6 +110,8 @@ class DepositIntegrationTest {
     @Test
     fun depositOfERC20() {
         val (tokenInfo, tokenAddress) = integrationHelper.deployRandomERC20Token(2)
+        integrationHelper.sendMultitransaction()
+
         val assetId = "${tokenInfo.name}#ethereum"
         val initialAmount = integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, assetId)
         val amount = BigInteger.valueOf(51)
@@ -137,6 +137,8 @@ class DepositIntegrationTest {
     @Test
     fun depositZeroOfERC20() {
         val (tokenInfo, tokenAddress) = integrationHelper.deployRandomERC20Token(2)
+        integrationHelper.sendMultitransaction()
+
         val assetId = "${tokenInfo.name}#ethereum"
         val initialAmount = integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, assetId)
         val zeroAmount = BigInteger.ZERO

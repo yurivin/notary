@@ -8,9 +8,9 @@ import mu.KLogging
 import sidechain.iroha.util.ModelUtil
 
 /**
- * Endpoint of Iroha to write transactions
- * @param irohaCredential for creating transactions
- * @param irohaNetwork Iroha network
+ * Iroha endpoint to send transactions from single Iroha account
+ * @param irohaCredential - iroha account and keypair to sign transactions
+ * @param irohaNetwork Iroha network layer
  */
 class IrohaConsumerImpl(
     irohaCredential: IrohaCredential,

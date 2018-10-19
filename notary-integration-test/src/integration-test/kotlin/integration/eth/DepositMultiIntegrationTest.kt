@@ -45,6 +45,8 @@ class DepositMultiIntegrationTest {
     private val privkeyPath2 = "deploy/iroha/keys/notary1@notary.priv"
 
     init {
+        integrationHelper.sendMultitransaction()
+
         // run notary
         integrationHelper.runEthNotary()
 
@@ -113,6 +115,7 @@ class DepositMultiIntegrationTest {
     @Test
     fun depositMultisigERC20() {
         val (tokenInfo, tokenAddress) = integrationHelper.deployRandomERC20Token(2)
+        integrationHelper.sendMultitransaction()
         val assetId = "${tokenInfo.name}#ethereum"
         val initialAmount = integrationHelper.getIrohaAccountBalance(clientIrohaAccountId, assetId)
         val amount = BigInteger.valueOf(51)

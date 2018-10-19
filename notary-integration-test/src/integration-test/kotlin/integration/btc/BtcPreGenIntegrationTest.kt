@@ -9,12 +9,9 @@ import org.bitcoinj.core.Utils
 import org.bitcoinj.params.RegTestParams
 import org.bitcoinj.script.ScriptBuilder
 import org.bitcoinj.wallet.Wallet
-import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.fail
 import pregeneration.btc.BtcPreGenInitialization
 import provider.NotaryPeerListProviderImpl
 import provider.TriggerProvider
@@ -68,6 +65,7 @@ class BtcPreGenIntegrationTest {
     @Test
     fun testGenerateKey() {
         integrationHelper.addNotary("test_notary", "test_notary_address")
+        integrationHelper.sendMultitransaction()
         launch {
             IrohaChainListener(
                 btcPreGenConfig.iroha.hostname,

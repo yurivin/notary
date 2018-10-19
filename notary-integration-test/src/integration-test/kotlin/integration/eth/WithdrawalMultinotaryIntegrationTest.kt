@@ -9,10 +9,7 @@ import notary.endpoint.eth.EthNotaryResponse
 import notary.endpoint.eth.EthNotaryResponseMoshiAdapter
 import notary.eth.ENDPOINT_ETHEREUM
 import notary.eth.EthNotaryConfig
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.*
 import org.web3j.crypto.ECKeyPair
 import provider.eth.ETH_PRECISION
 import provider.eth.EthRelayProviderIrohaImpl
@@ -55,10 +52,7 @@ class WithdrawalMultinotaryIntegrationTest {
         val ethereumConfig1 = integrationHelper.configHelper.createEthereumConfig(ethKeyPath)
 
         keypair1 = DeployHelper(ethereumConfig1, ethereumPasswords).credentials.ecKeyPair
-
-        // run 1st instance of notary
         notaryConfig1 = integrationHelper.configHelper.createEthNotaryConfig()
-        integrationHelper.runEthNotary(ethNotaryConfig = notaryConfig1)
 
         // create 2nd notary config
         val ethereumConfig2 =
@@ -69,7 +63,10 @@ class WithdrawalMultinotaryIntegrationTest {
 
         integrationHelper.accountHelper.addNotarySignatory(ModelUtil.loadKeypair(pubkeyPath, privkeyPath).get())
 
-        // run 2nd instance of notary
+        integrationHelper.sendMultitransaction()
+
+        // run notaries
+        integrationHelper.runEthNotary(ethNotaryConfig = notaryConfig1)
         integrationHelper.runEthNotary(ethNotaryConfig = notaryConfig2)
 
         integrationHelper.lockEthMasterSmartcontract()

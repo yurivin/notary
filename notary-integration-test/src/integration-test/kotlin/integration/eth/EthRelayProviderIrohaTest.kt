@@ -53,6 +53,7 @@ class EthRelayProviderIrohaTest {
         )
 
         integrationHelper.addRelaysToIroha(entries)
+        integrationHelper.sendMultitransaction()
 
         val valid = entries.filter { it.value != "free" }
 

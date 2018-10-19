@@ -2,12 +2,9 @@ package integration.eth
 
 import com.github.kittinunf.result.success
 import integration.helper.IntegrationHelperUtil
-import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.fail
 import provider.eth.ETH_ADDRESS
 import provider.eth.ETH_NAME
 import provider.eth.ETH_PRECISION
@@ -22,6 +19,11 @@ class EthTokensProviderTest {
     private val integrationHelper = IntegrationHelperUtil()
 
     private val ethTokensProvider = integrationHelper.ethTokensProvider
+
+    @BeforeAll
+    fun setUp() {
+        integrationHelper.sendMultitransaction()
+    }
 
     @AfterAll
     fun dropDown() {
@@ -46,6 +48,7 @@ class EthTokensProviderTest {
             expectedTokens[ethWallet] = EthTokenInfo(tokenName, tokenPrecision)
             integrationHelper.addERC20Token(ethWallet, tokenName, tokenPrecision)
         }
+        integrationHelper.sendMultitransaction()
         ethTokensProvider.getTokens()
             .fold(
                 { tokens ->

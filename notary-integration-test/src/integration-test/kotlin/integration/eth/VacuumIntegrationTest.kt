@@ -2,10 +2,7 @@ package integration.eth
 
 import integration.helper.IntegrationHelperUtil
 import mu.KLogging
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.*
 import java.math.BigInteger
 
 /**
@@ -15,6 +12,12 @@ import java.math.BigInteger
 class VacuumIntegrationTest {
 
     private val integrationHelper = IntegrationHelperUtil()
+
+
+    @BeforeAll
+    fun setUp() {
+        integrationHelper.sendMultitransaction()
+    }
 
     @AfterAll
     fun dropDown() {
@@ -64,6 +67,7 @@ class VacuumIntegrationTest {
         for (i in 1..3) {
             integrationHelper.deployRandomERC20Token()
         }
+        integrationHelper.sendMultitransaction()
     }
 
     /**

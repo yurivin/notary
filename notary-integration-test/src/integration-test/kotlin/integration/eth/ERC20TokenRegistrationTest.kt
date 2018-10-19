@@ -33,6 +33,11 @@ class ERC20TokenRegistrationTest {
         tokenRegistrationConfig.irohaCredential.accountId
     )
 
+    @BeforeAll
+    fun setUp() {
+        integrationHelper.sendMultitransaction()
+    }
+
     @AfterEach
     fun clearFile() {
         File(tokensFilePath).delete()

@@ -4,11 +4,8 @@ import com.github.kittinunf.result.failure
 import integration.helper.IntegrationHelperUtil
 import model.IrohaCredential
 import notary.btc.BtcNotaryInitialization
-import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.fail
 import provider.btc.address.BtcRegisteredAddressesProvider
 import provider.btc.network.BtcRegTestConfigProvider
 import sidechain.iroha.CLIENT_DOMAIN
@@ -26,6 +23,7 @@ class BtcNotaryIntegrationTest {
     init {
         integrationHelper.generateBtcBlocks()
         integrationHelper.addNotary("test_notary", "test_notary_address")
+        integrationHelper.sendMultitransaction()
     }
 
     private val notaryConfig = integrationHelper.configHelper.createBtcNotaryConfig()

@@ -1,7 +1,9 @@
 package integration.helper
 
 import com.github.jleskovar.btcrpc.BitcoinRpcClientFactory
-import com.github.kittinunf.result.*
+import com.github.kittinunf.result.Result
+import com.github.kittinunf.result.failure
+import com.github.kittinunf.result.flatMap
 import config.EthereumPasswords
 import config.loadConfigs
 import integration.TestConfig
@@ -31,6 +33,7 @@ import sidechain.eth.EthChainListener
 import sidechain.iroha.IrohaChainListener
 import sidechain.iroha.IrohaInitialization
 import sidechain.iroha.consumer.IrohaConsumerImpl
+import sidechain.iroha.consumer.IrohaMulticreatorConsumer
 import sidechain.iroha.consumer.IrohaNetworkImpl
 import sidechain.iroha.util.ModelUtil
 import sidechain.iroha.util.getAccountAsset
@@ -106,25 +109,32 @@ class IntegrationHelperUtil : Closeable {
         BigInteger.valueOf(testConfig.ethereum.confirmationPeriod)
     )
 
+    private fun buildModelTransactionBuilder() = ModelTransactionBuilder().quorum(1)
+    val irohaMulticonsumer = IrohaMulticreatorConsumer(irohaNetwork)
+
+    fun sendMultitransaction() {
+        irohaMulticonsumer.sendAndCheck()
+    }
+
     private val registrationConsumer by lazy {
         IrohaConsumerImpl(accountHelper.registrationAccount, irohaNetwork)
     }
 
-    private val tokenProviderIrohaConsumer by lazy {
-        IrohaConsumerImpl(accountHelper.tokenSetterAccount, irohaNetwork)
-    }
+//    private val tokenProviderIrohaConsumer by lazy {
+//        IrohaConsumerImpl(accountHelper.tokenSetterAccount, irohaNetwork)
+//    }
+//
+//    private val whiteListIrohaConsumer by lazy {
+//        IrohaConsumerImpl(accountHelper.whitelistSetter, irohaNetwork)
+//    }
 
-    private val whiteListIrohaConsumer by lazy {
-        IrohaConsumerImpl(accountHelper.whitelistSetter, irohaNetwork)
-    }
+//    private val notaryListIrohaConsumer by lazy {
+//        IrohaConsumerImpl(accountHelper.notaryListSetterAccount, irohaNetwork)
+//    }
 
-    private val notaryListIrohaConsumer by lazy {
-        IrohaConsumerImpl(accountHelper.notaryListSetterAccount, irohaNetwork)
-    }
-
-    private val mstRegistrationIrohaConsumer by lazy {
-        IrohaConsumerImpl(accountHelper.mstRegistrationAccount, irohaNetwork)
-    }
+//    private val mstRegistrationIrohaConsumer by lazy {
+//        IrohaConsumerImpl(accountHelper.mstRegistrationAccount, irohaNetwork)
+//    }
 
     val relayRegistryContract by lazy {
         val contract = contractTestHelper.relayRegistry
@@ -233,12 +243,17 @@ class IntegrationHelperUtil : Closeable {
         val wallet = Wallet.loadFromFile(walletFile)
         val address = wallet.freshReceiveAddress()
         wallet.saveToFile(walletFile)
-        return ModelUtil.setAccountDetail(
-            mstRegistrationIrohaConsumer,
-            accountHelper.notaryAccount.accountId,
-            address.toBase58(),
-            "free"
-        ).map { address }
+
+        irohaMulticonsumer.addTx(
+            ModelTransactionBuilder().setAccountDetail(
+                accountHelper.notaryAccount.accountId,
+                address.toBase58(),
+                "free"
+            ),
+            accountHelper.mstRegistrationAccount
+        )
+
+        return Result.of { address }
     }
 
     /**
@@ -249,6 +264,7 @@ class IntegrationHelperUtil : Closeable {
     fun registerBtcAddress(irohaAccountName: String): String {
         val keypair = ModelCrypto().generateKeypair()
         preGenBtcAddress().fold({
+            sendMultitransaction()
             btcRegistrationStrategy.register(irohaAccountName, emptyList(), keypair.publicKey().hex())
                 .fold({ btcAddress ->
                     return btcAddress
@@ -302,14 +318,17 @@ class IntegrationHelperUtil : Closeable {
      */
     fun addERC20Token(tokenAddress: String, tokenName: String, precision: Short) {
         ModelUtil.createAsset(irohaConsumer, tokenName, "ethereum", precision)
-        ModelUtil.setAccountDetail(
-            tokenProviderIrohaConsumer,
-            accountHelper.tokenStorageAccount.accountId,
-            tokenAddress,
-            tokenName
-        ).success {
-            logger.info { "token $tokenName was added to ${accountHelper.tokenStorageAccount} by ${tokenProviderIrohaConsumer.creator}" }
-        }
+
+        irohaMulticonsumer.addTx(
+            ModelTransactionBuilder().setAccountDetail(
+                accountHelper.tokenStorageAccount.accountId,
+                tokenAddress,
+                tokenName
+            ),
+            accountHelper.tokenSetterAccount
+        )
+
+        logger.info { "token $tokenName was added to ${accountHelper.tokenStorageAccount} by ${accountHelper.tokenSetterAccount.accountId}" }
     }
 
     /**
@@ -502,11 +521,9 @@ class IntegrationHelperUtil : Closeable {
         val text = addresses.joinToString()
         logger.info { "Set whitelist $text to $clientAccount by ${registrationConsumer.creator}" }
 
-        ModelUtil.setAccountDetail(
-            registrationConsumer,
-            clientAccount,
-            "eth_whitelist",
-            text
+        irohaMulticonsumer.addTx(
+            ModelTransactionBuilder().setAccountDetail(clientAccount, "eth_whitelist", text),
+            accountHelper.registrationAccount
         )
     }
 
@@ -514,11 +531,13 @@ class IntegrationHelperUtil : Closeable {
      * Add notary to notary list provider. [name] is a string to identify a multisig notary account
      */
     fun addNotary(name: String, address: String) {
-        ModelUtil.setAccountDetail(
-            notaryListIrohaConsumer,
-            accountHelper.notaryListStorageAccount.accountId,
-            name,
-            address
+        irohaMulticonsumer.addTx(
+            ModelTransactionBuilder().setAccountDetail(
+                accountHelper.notaryListStorageAccount.accountId,
+                name,
+                address
+            ),
+            accountHelper.notaryListSetterAccount
         )
     }
 
@@ -529,11 +548,12 @@ class IntegrationHelperUtil : Closeable {
     fun addRelaysToIroha(relays: Map<String, String>) {
         relays.map {
             // Set ethereum wallet as occupied by user id
-            ModelUtil.setAccountDetail(
-                registrationConsumer,
-                accountHelper.notaryAccount.accountId,
-                it.key,
-                it.value
+            irohaMulticonsumer.addTx(
+                ModelTransactionBuilder().setAccountDetail(
+                    accountHelper.notaryAccount.accountId, it.key,
+                    it.value
+                ),
+                accountHelper.registrationAccount
             )
         }
     }

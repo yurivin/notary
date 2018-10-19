@@ -42,6 +42,8 @@ class WithdrawalPipelineIntegrationTest {
     private val withdrawalService: Job
 
     init {
+        integrationHelper.sendMultitransaction()
+
         integrationHelper.runEthNotary(ethNotaryConfig = notaryConfig)
         registrationService = launch {
             integrationHelper.runRegistrationService(registrationConfig)
@@ -143,6 +145,7 @@ class WithdrawalPipelineIntegrationTest {
             BigInteger.valueOf(125),
             integrationHelper.masterContract.contractAddress
         )
+        integrationHelper.sendMultitransaction()
 
         val amount = "1.25"
         val domain = "ethereum"
