@@ -490,6 +490,7 @@ class IntegrationHelperUtil : Closeable {
 
     fun sendBtc(address: String, amount: Int, confirmations: Int = 6) {
         rpcClient.sendToAddress(address = address, amount = BigDecimal(amount))
+        logger.info { "Send $amount of btc to $address" }
         generateBtcBlocks(confirmations)
     }
 
