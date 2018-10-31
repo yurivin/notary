@@ -15,7 +15,6 @@ import registration.btc.BtcRegistrationServiceInitialization
 import registration.btc.BtcRegistrationStrategyImpl
 import sidechain.iroha.CLIENT_DOMAIN
 import sidechain.iroha.consumer.IrohaConsumerImpl
-import sidechain.iroha.consumer.IrohaNetworkImpl
 import sidechain.iroha.util.ModelUtil
 import util.getRandomString
 import java.math.BigInteger
@@ -37,9 +36,7 @@ class BtcRegistrationIntegrationTest {
         { ex -> throw ex }
     )
 
-    private val irohaNetwork = IrohaNetworkImpl(btcRegistrationConfig.iroha.hostname, btcRegistrationConfig.iroha.port)
-
-    private val btcClientCreatorConsumer = IrohaConsumerImpl(btcRegistrationCredential, irohaNetwork)
+    private val btcClientCreatorConsumer = IrohaConsumerImpl(btcRegistrationCredential, integrationHelper.irohaNetwork)
 
     private val btcRegistrationServiceInitialization = BtcRegistrationServiceInitialization(
         btcRegistrationConfig,
@@ -53,7 +50,7 @@ class BtcRegistrationIntegrationTest {
 
     private val btcTakenAddressesProvider = BtcRegisteredAddressesProvider(
         integrationHelper.testCredential,
-        irohaNetwork,
+        integrationHelper.irohaNetwork,
         btcRegistrationConfig.registrationCredential.accountId,
         integrationHelper.accountHelper.notaryAccount.accountId
     )
@@ -66,7 +63,6 @@ class BtcRegistrationIntegrationTest {
     @AfterAll
     fun dropDown() {
         integrationHelper.close()
-        irohaNetwork.close()
     }
 
     /**
@@ -158,7 +154,7 @@ class BtcRegistrationIntegrationTest {
     private fun btcAddressesProvider(): BtcAddressesProvider {
         return BtcAddressesProvider(
             btcRegistrationCredential,
-            irohaNetwork,
+            integrationHelper.irohaNetwork,
             btcRegistrationConfig.mstRegistrationAccount,
             btcRegistrationConfig.notaryAccount
         )
@@ -167,7 +163,7 @@ class BtcRegistrationIntegrationTest {
     private fun btcRegisteredAddressesProvider(): BtcRegisteredAddressesProvider {
         return BtcRegisteredAddressesProvider(
             btcRegistrationCredential,
-            irohaNetwork,
+            integrationHelper.irohaNetwork,
             btcRegistrationCredential.accountId,
             btcRegistrationConfig.notaryAccount
         )

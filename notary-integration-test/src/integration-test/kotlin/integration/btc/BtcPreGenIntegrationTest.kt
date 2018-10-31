@@ -20,7 +20,6 @@ import provider.btc.BtcSessionProvider
 import provider.btc.network.BtcRegTestConfigProvider
 import sidechain.iroha.IrohaChainListener
 import sidechain.iroha.consumer.IrohaConsumerImpl
-import sidechain.iroha.consumer.IrohaNetworkImpl
 import sidechain.iroha.util.ModelUtil
 import util.getRandomString
 import wallet.WalletFile
@@ -37,22 +36,19 @@ class BtcPreGenIntegrationTest {
     private val btcPreGenConfig =
         integrationHelper.configHelper.createBtcPreGenConfig()
 
-    private val irohaNetwork = IrohaNetworkImpl(btcPreGenConfig.iroha.hostname, btcPreGenConfig.iroha.port)
-
     private val triggerProvider = TriggerProvider(
         integrationHelper.testCredential,
-        irohaNetwork,
+        integrationHelper.irohaNetwork,
         btcPreGenConfig.pubKeyTriggerAccount
     )
     private val btcKeyGenSessionProvider = BtcSessionProvider(
         integrationHelper.accountHelper.registrationAccount,
-        irohaNetwork
+        integrationHelper.irohaNetwork
     )
 
     @AfterAll
     fun dropDown() {
         integrationHelper.close()
-        irohaNetwork.close()
     }
 
     /**
@@ -74,7 +70,7 @@ class BtcPreGenIntegrationTest {
             ).use { irohaListener ->
                 BtcPreGenInitialization(
                     registrationCredential,
-                    irohaNetwork,
+                    integrationHelper.irohaNetwork,
                     btcPreGenConfig,
                     btcPublicKeyProvider(),
                     irohaListener
@@ -136,11 +132,11 @@ class BtcPreGenIntegrationTest {
         }, { ex -> throw ex })
 
     private val sessionConsumer =
-        IrohaConsumerImpl(registrationCredential, irohaNetwork)
+        IrohaConsumerImpl(registrationCredential, integrationHelper.irohaNetwork)
 
     private val multiSigConsumer = IrohaConsumerImpl(
         IrohaCredential(btcPreGenConfig.mstRegistrationAccount.accountId, mstRegistrationKeyPair),
-        irohaNetwork
+        integrationHelper.irohaNetwork
     )
 
     fun btcPublicKeyProvider(): BtcPublicKeyProvider {
@@ -149,7 +145,7 @@ class BtcPreGenIntegrationTest {
         val walletFile = WalletFile(wallet, file)
         val notaryPeerListProvider = NotaryPeerListProviderImpl(
             registrationCredential,
-            irohaNetwork,
+            integrationHelper.irohaNetwork,
             btcPreGenConfig.notaryListStorageAccount,
             btcPreGenConfig.notaryListSetterAccount
         )
