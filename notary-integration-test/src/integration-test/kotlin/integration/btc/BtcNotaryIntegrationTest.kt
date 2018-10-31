@@ -6,7 +6,7 @@ import integration.helper.btcAsset
 import model.IrohaCredential
 import notary.btc.BtcNotaryInitialization
 import org.bitcoinj.core.Address
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

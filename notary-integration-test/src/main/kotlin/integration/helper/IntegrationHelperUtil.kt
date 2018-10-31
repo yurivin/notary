@@ -122,22 +122,6 @@ class IntegrationHelperUtil : Closeable {
         IrohaConsumerImpl(accountHelper.registrationAccount, irohaNetwork)
     }
 
-//    private val tokenProviderIrohaConsumer by lazy {
-//        IrohaConsumerImpl(accountHelper.tokenSetterAccount, irohaNetwork)
-//    }
-//
-//    private val whiteListIrohaConsumer by lazy {
-//        IrohaConsumerImpl(accountHelper.whitelistSetter, irohaNetwork)
-//    }
-
-//    private val notaryListIrohaConsumer by lazy {
-//        IrohaConsumerImpl(accountHelper.notaryListSetterAccount, irohaNetwork)
-//    }
-
-//    private val mstRegistrationIrohaConsumer by lazy {
-//        IrohaConsumerImpl(accountHelper.mstRegistrationAccount, irohaNetwork)
-//    }
-
     val relayRegistryContract by lazy {
         val contract = contractTestHelper.relayRegistry
         logger.info { "relay registry eth wallet ${contract.contractAddress} was deployed" }
@@ -263,8 +247,10 @@ class IntegrationHelperUtil : Closeable {
      * @param irohaAccountName - client account in Iroha
      * @return btc address related to client
      */
-    fun registerBtcAddress(irohaAccountName: String,
-                           keypair: Keypair = ModelCrypto().generateKeypair()): String {
+    fun registerBtcAddress(
+        irohaAccountName: String,
+        keypair: Keypair = ModelCrypto().generateKeypair()
+    ): String {
         preGenBtcAddress().fold({
             sendMultitransaction()
             btcRegistrationStrategy.register(irohaAccountName, emptyList(), keypair.publicKey().hex())
