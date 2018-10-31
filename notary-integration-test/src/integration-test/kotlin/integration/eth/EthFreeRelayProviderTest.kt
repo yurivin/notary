@@ -27,6 +27,9 @@ class EthFreeRelayProviderTest {
     /** Iroha transaction creator */
     val creator = integrationHelper.testCredential.accountId
 
+    val notaryAccountId = integrationHelper.accountHelper.notaryAccount.accountId
+
+    val registrationAccountId = integrationHelper.accountHelper.registrationAccount.accountId
 
     @BeforeAll
     fun setUp() {
@@ -48,7 +51,7 @@ class EthFreeRelayProviderTest {
     fun getFreeWallet() {
         val ethFreeWallet = "eth_free_wallet_stub"
 
-        setAccountDetail(irohaConsumer, integrationHelper.accountHelper.notaryAccount.accountId, ethFreeWallet, "free")
+        setAccountDetail(irohaConsumer, notaryAccountId, ethFreeWallet, "free")
             .failure { fail(it) }
 
         val freeWalletsProvider =
@@ -100,8 +103,8 @@ class EthFreeRelayProviderTest {
             EthFreeRelayProvider(
                 integrationHelper.testCredential,
                 irohaNetwork,
-                integrationHelper.accountHelper.notaryAccount.accountId,
-                integrationHelper.accountHelper.registrationAccount.accountId
+                notaryAccountId,
+                registrationAccountId
             )
 
         freeWalletsProvider.getRelays()

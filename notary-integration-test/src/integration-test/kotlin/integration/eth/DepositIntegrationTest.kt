@@ -20,9 +20,11 @@ class DepositIntegrationTest {
     private val etherAssetId = "ether#ethereum"
 
     init {
+        val ethNotaryConfig = integrationHelper.configHelper.createEthNotaryConfig()
         integrationHelper.sendMultitransaction()
+
         // run notary
-        integrationHelper.runEthNotary()
+        integrationHelper.runEthNotary(ethNotaryConfig = ethNotaryConfig)
         integrationHelper.lockEthMasterSmartcontract()
     }
 

@@ -30,13 +30,7 @@ class DepositMultiIntegrationTest {
     private val clientIrohaAccountId = "$clientIrohaAccount@$CLIENT_DOMAIN"
 
     /** Ethereum address to transfer to */
-    private val relayWallet = registerRelay()
-
-    private fun registerRelay(): String {
-        integrationHelper.deployRelays(1)
-        // TODO: D3-417 Web3j cannot pass an empty list of addresses to the smart contract.
-        return integrationHelper.registerClient(clientIrohaAccount, listOf())
-    }
+    private val relayWallet: String
 
     /** Path to public key of 2nd instance of notary */
     private val pubkeyPath2 = "deploy/iroha/keys/notary1@notary.pub"
@@ -45,6 +39,8 @@ class DepositMultiIntegrationTest {
     private val privkeyPath2 = "deploy/iroha/keys/notary1@notary.priv"
 
     init {
+        val notaryAccountId = integrationHelper.accountHelper.notaryAccount.accountId
+
         integrationHelper.sendMultitransaction()
 
         // run notary
@@ -54,7 +50,7 @@ class DepositMultiIntegrationTest {
         val irohaCredential = object : IrohaCredentialConfig {
             override val pubkeyPath = pubkeyPath2
             override val privkeyPath = privkeyPath2
-            override val accountId = integrationHelper.accountHelper.notaryAccount.accountId
+            override val accountId = notaryAccountId
         }
 
         val ethereumPasswords = loadEthPasswords("test", "/eth/ethereum_password.properties")
@@ -69,11 +65,16 @@ class DepositMultiIntegrationTest {
         val keypair = ModelUtil.loadKeypair(pubkeyPath2, privkeyPath2).get()
 
         integrationHelper.accountHelper.addNotarySignatory(keypair)
+        integrationHelper.sendMultitransaction()
 
         // run 2nd instance of notary
         integrationHelper.runEthNotary(ethereumPasswords, notaryConfig)
 
         integrationHelper.lockEthMasterSmartcontract()
+
+        integrationHelper.deployRelays(1)
+        // TODO: D3-417 Web3j cannot pass an empty list of addresses to the smart contract.
+        relayWallet = integrationHelper.registerClient(clientIrohaAccount, listOf())
     }
 
     @AfterAll

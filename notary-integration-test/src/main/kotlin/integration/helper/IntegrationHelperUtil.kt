@@ -77,7 +77,13 @@ class IntegrationHelperUtil : Closeable {
         ).get()
     )
 
-    val accountHelper by lazy { AccountHelper(irohaNetwork) }
+    val irohaNetwork by lazy {
+        IrohaNetworkImpl(testConfig.iroha.hostname, testConfig.iroha.port)
+    }
+
+    private val irohaMulticonsumer = IrohaMulticreatorConsumer(irohaNetwork)
+
+    val accountHelper by lazy { AccountHelper(irohaMulticonsumer) }
 
     val configHelper by lazy {
         ConfigHelper(
@@ -91,10 +97,6 @@ class IntegrationHelperUtil : Closeable {
 
     /** Ethereum utils */
     private val contractTestHelper by lazy { ContractTestHelper() }
-
-    val irohaNetwork by lazy {
-        IrohaNetworkImpl(testConfig.iroha.hostname, testConfig.iroha.port)
-    }
 
     private val irohaConsumer by lazy {
         IrohaConsumerImpl(testCredential, irohaNetwork)
@@ -110,9 +112,6 @@ class IntegrationHelperUtil : Closeable {
         contractTestHelper.deployHelper.web3,
         BigInteger.valueOf(testConfig.ethereum.confirmationPeriod)
     )
-
-    private fun buildModelTransactionBuilder() = ModelTransactionBuilder().quorum(1)
-    val irohaMulticonsumer = IrohaMulticreatorConsumer(irohaNetwork)
 
     fun sendMultitransaction() {
         irohaMulticonsumer.sendAndCheck()

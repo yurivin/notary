@@ -8,15 +8,14 @@ import jp.co.soramitsu.iroha.Keypair
 import jp.co.soramitsu.iroha.ModelTransactionBuilder
 import model.IrohaCredential
 import mu.KLogging
-import sidechain.iroha.consumer.IrohaConsumerImpl
-import sidechain.iroha.consumer.IrohaNetwork
+import sidechain.iroha.consumer.IrohaMulticreatorConsumer
 import sidechain.iroha.util.ModelUtil
 import util.getRandomString
 
 /**
  * Class that handles all the accounts in running configuration.
  */
-class AccountHelper(private val irohaNetwork: IrohaNetwork) {
+class AccountHelper(private val irohaMulticonsumer: IrohaMulticreatorConsumer) {
 
     private val testConfig = loadConfigs("test", TestConfig::class.java, "/test.properties")
 
@@ -28,8 +27,6 @@ class AccountHelper(private val irohaNetwork: IrohaNetwork) {
             testConfig.testCredentialConfig.privkeyPath
         ).get()
     )
-
-    private val irohaConsumer by lazy { IrohaConsumerImpl(testCredential, irohaNetwork) }
 
     /** Notary account */
     val notaryAccount by lazy { createNotaryAccount() }
@@ -83,19 +80,17 @@ class AccountHelper(private val irohaNetwork: IrohaNetwork) {
         val domain = "notary"
         // TODO - Bulat - generate new keys for account?
         val creator = testCredential.accountId
-        irohaConsumer.sendAndCheck(
+        irohaMulticonsumer.addTx(
             ModelTransactionBuilder()
                 .creatorAccountId(creator)
                 .createdTime(ModelUtil.getCurrentTime())
                 .createAccount(name, domain, testCredential.keyPair.publicKey())
-                .appendRole("$name@$domain", roleName)
-                .build()
-        ).fold({
-            logger.info("account $name@$domain was created")
-            return IrohaCredential("$name@$domain", testCredential.keyPair)
-        }, { ex ->
-            throw ex
-        })
+                .appendRole("$name@$domain", roleName),
+            testCredential
+        )
+        logger.info("account $name@$domain was created")
+        return IrohaCredential("$name@$domain", testCredential.keyPair)
+
     }
 
     /**
@@ -104,13 +99,13 @@ class AccountHelper(private val irohaNetwork: IrohaNetwork) {
     private fun createNotaryAccount(): IrohaCredential {
         val credential = createTesterAccount("eth_notary_${String.getRandomString(9)}", "notary")
 
-        IrohaConsumerImpl(credential, irohaNetwork).sendAndCheck(
+        irohaMulticonsumer.addTx(
             ModelTransactionBuilder()
                 .creatorAccountId(credential.accountId)
                 .createdTime(ModelUtil.getCurrentTime())
                 .grantPermission(testCredential.accountId, Grantable.kSetMyQuorum)
-                .grantPermission(testCredential.accountId, Grantable.kAddMySignatory)
-                .build()
+                .grantPermission(testCredential.accountId, Grantable.kAddMySignatory),
+            credential
         )
 
         return credential
@@ -120,19 +115,15 @@ class AccountHelper(private val irohaNetwork: IrohaNetwork) {
      * Add signatory with [keypair] to notary
      */
     fun addNotarySignatory(keypair: Keypair) {
-        irohaConsumer.sendAndCheck(
+        irohaMulticonsumer.addTx(
             ModelTransactionBuilder()
                 .creatorAccountId(testCredential.accountId)
                 .createdTime(ModelUtil.getCurrentTime())
                 .addSignatory(notaryAccount.accountId, keypair.publicKey())
-                .setAccountQuorum(notaryAccount.accountId, notaryKeys.size + 1)
-                .build()
-        ).fold({
-            notaryKeys.add(keypair)
-            logger.info("added signatory to account $notaryAccount")
-        }, { ex ->
-            throw ex
-        })
+                .setAccountQuorum(notaryAccount.accountId, notaryKeys.size + 1),
+            testCredential
+        )
+        logger.info("added signatory to account $notaryAccount")
     }
 
     /**
