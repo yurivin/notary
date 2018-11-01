@@ -306,13 +306,15 @@ class IntegrationHelperUtil : Closeable {
     fun addERC20Token(tokenAddress: String, tokenName: String, precision: Short) {
         ModelUtil.createAsset(irohaConsumer, tokenName, "ethereum", precision)
 
+        val tokenSetter = accountHelper.tokenSetterAccount
+
         irohaMulticonsumer.addTx(
             ModelTransactionBuilder().setAccountDetail(
                 accountHelper.tokenStorageAccount.accountId,
                 tokenAddress,
                 tokenName
             ),
-            accountHelper.tokenSetterAccount
+            tokenSetter
         )
 
         logger.info { "token $tokenName was added to ${accountHelper.tokenStorageAccount} by ${accountHelper.tokenSetterAccount.accountId}" }

@@ -13,15 +13,22 @@ class VacuumIntegrationTest {
 
     private val integrationHelper = IntegrationHelperUtil()
 
-
     @BeforeAll
     fun setUp() {
+        deployFewTokens()
+        integrationHelper.accountHelper.registrationAccount // lazy init of registration account
         integrationHelper.sendMultitransaction()
     }
 
     @AfterAll
     fun dropDown() {
         integrationHelper.close()
+    }
+
+    private fun deployFewTokens() {
+        for (i in 1..3) {
+            integrationHelper.deployRandomERC20Token()
+        }
     }
 
     /**
@@ -33,7 +40,6 @@ class VacuumIntegrationTest {
      */
     @Test
     fun testVacuum() {
-        deployFewTokens()
         integrationHelper.deployRelays(2)
         integrationHelper.registerRandomRelay()
         logger.info("test is ready to proceed")
@@ -61,13 +67,6 @@ class VacuumIntegrationTest {
         wallets.forEach { ethPublicKey ->
             Assertions.assertEquals(integrationHelper.getEthBalance(ethPublicKey), BigInteger.ZERO)
         }
-    }
-
-    private fun deployFewTokens() {
-        for (i in 1..3) {
-            integrationHelper.deployRandomERC20Token()
-        }
-        integrationHelper.sendMultitransaction()
     }
 
     /**
