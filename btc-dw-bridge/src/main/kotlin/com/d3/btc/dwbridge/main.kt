@@ -1,12 +1,11 @@
 @file:JvmName("BtcDepositWithdrawalMain")
 
-package dwbridge.btc
+package com.d3.btc.dwbridge
 
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.map
 import config.getProfile
-import dwbridge.btc.config.dwBridgeConfig
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import mu.KLogging
@@ -17,6 +16,7 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.EnableMBeanExport
 import util.createFolderIfDoesntExist
 import com.d3.btc.withdrawal.init.BtcWithdrawalInitialization
+import com.d3.btc.dwbridge.config.dwBridgeConfig
 import java.util.*
 
 @EnableMBeanExport
@@ -34,7 +34,7 @@ import java.util.*
         "com.d3.btc.handler",
         "com.d3.btc.deposit.init",
         "com.d3.btc.peer",
-        "dwbridge",
+        "com.d3.btc.dwbridge",
         "com.d3.btc.healthcheck"]
 )
 class BtcDWBridgeApplication
