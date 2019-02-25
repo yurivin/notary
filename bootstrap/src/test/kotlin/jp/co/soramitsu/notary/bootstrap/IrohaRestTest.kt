@@ -1,5 +1,6 @@
 package jp.co.soramitsu.notary.bootstrap
 
+import jp.co.soramitsu.iroha.testcontainers.detail.GenesisBlockBuilder
 import mu.KLogging
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,7 +27,7 @@ class IrohaRestTest {
 
     @Test
     @Throws(Exception::class)
-    fun exampleTest() {
+    fun keyPairTest() {
         val result: MvcResult = mvc
             .perform(get("/iroha/generateKeyPair"))
             .andExpect(status().isOk)
@@ -35,6 +36,11 @@ class IrohaRestTest {
         log.info("Response body: $respBody")
         assertTrue(respBody.contains("private"))
         assertTrue(respBody.contains("public"))
+    }
+
+    @Test
+    fun genesisBlockTest() {
+        /*GenesisBlockBuilder().addTransaction()*/
     }
 }
 
