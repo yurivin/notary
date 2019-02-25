@@ -1,5 +1,7 @@
 package jp.co.soramitsu.notary.bootstrap.controller
 
+import jp.co.soramitsu.iroha.java.Utils
+import jp.co.soramitsu.notary.bootstrap.dto.GenericData
 import jp.co.soramitsu.notary.bootstrap.dto.KeyPairDTO
 import mu.KLogging
 import org.springframework.http.HttpStatus
@@ -18,12 +20,18 @@ class IrohaController {
     private val log = KLogging().logger
 
     @GetMapping("/generateKeyPair")
-    fun createBankAccount(): ResponseEntity<KeyPairDTO> {
+    fun generateBankAccount(): ResponseEntity<KeyPairDTO> {
         log.info("REST request to generate KeyPair")
 
         val keyPair = ModelUtil.generateKeypair()
-        val response = KeyPairDTO(keyPair.private.toString(), keyPair.public.toString())
+        val response = KeyPairDTO(Utils.toHex(keyPair.private.encoded), Utils.toHex(keyPair.public.encoded))
         return ResponseEntity.ok<KeyPairDTO>(response)
     }
+
+   /* @GetMapping("/generateGenericBlock")
+    fun generateGenericBlock():ResponseEntity<GenericData> {
+        log.info("Request of generic data")
+
+    }*/
 }
 
