@@ -1,4 +1,4 @@
-@file:JvmName("RegistrationMain")
+@file:JvmName("Bootstrap")
 
 package jp.co.soramitsu.notary.bootstrap
 

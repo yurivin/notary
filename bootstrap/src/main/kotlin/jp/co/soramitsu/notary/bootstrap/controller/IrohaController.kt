@@ -2,6 +2,7 @@ package jp.co.soramitsu.notary.bootstrap.controller
 
 import jp.co.soramitsu.notary.bootstrap.dto.KeyPairDTO
 import mu.KLogging
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -22,8 +23,7 @@ class IrohaController {
 
         val keyPair = ModelUtil.generateKeypair()
         val response = KeyPairDTO(keyPair.private.toString(), keyPair.public.toString())
-        return ResponseEntity.created(URI("/iroha/generateKeyPair"))
-                .body<KeyPairDTO>(response)
+        return ResponseEntity.ok<KeyPairDTO>(response)
     }
 }
 
