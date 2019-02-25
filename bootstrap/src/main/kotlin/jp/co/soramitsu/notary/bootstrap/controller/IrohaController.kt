@@ -1,6 +1,8 @@
 package jp.co.soramitsu.notary.bootstrap.controller
 
-import jp.co.soramitsu.notary.bootstrap.dto.KeyPairDTO
+import jp.co.soramitsu.notary.bootstrap.dto.GenesisData
+import jp.co.soramitsu.notary.bootstrap.dto.KeyPairDto
+import jp.co.soramitsu.notary.bootstrap.service.GenesisBlockService
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -11,23 +13,23 @@ import javax.xml.bind.DatatypeConverter
 
 @RestController
 @RequestMapping("/iroha")
-class IrohaController {
+class IrohaController(val blockService: GenesisBlockService) {
 
     private val log = KLogging().logger
 
-    @GetMapping("/generateKeyPair")
-    fun generateBankAccount(): ResponseEntity<KeyPairDTO> {
-        log.info("REST request to generate KeyPair")
+    @GetMapping("/getKeyPair")
+    fun generateBankAccount(): ResponseEntity<KeyPairDto> {
+        log.info("Request to generate KeyPair")
 
         val keyPair = ModelUtil.generateKeypair()
-        val response = KeyPairDTO(DatatypeConverter.printHexBinary(keyPair.private.encoded), DatatypeConverter.printHexBinary(keyPair.public.encoded))
-        return ResponseEntity.ok<KeyPairDTO>(response)
+        val response = KeyPairDto(DatatypeConverter.printHexBinary(keyPair.private.encoded), DatatypeConverter.printHexBinary(keyPair.public.encoded))
+        return ResponseEntity.ok<KeyPairDto>(response)
     }
 
-   /* @GetMapping("/generateGenericBlock")
-    fun generateGenericBlock():ResponseEntity<GenericData> {
+    @GetMapping("/getGenericBlock")
+    fun generateGenericBlock():ResponseEntity<GenesisData> {
         log.info("Request of generic data")
-
-    }*/
+        return ResponseEntity.ok<GenesisData>(blockService.getGenericData())
+    }
 }
 

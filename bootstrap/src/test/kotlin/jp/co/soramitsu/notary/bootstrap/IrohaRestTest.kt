@@ -1,10 +1,11 @@
 package jp.co.soramitsu.notary.bootstrap
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.google.protobuf.util.JsonFormat
 import iroha.protocol.BlockOuterClass
 import iroha.protocol.Primitive
+import jp.co.soramitsu.crypto.ed25519.Ed25519Sha3
 import jp.co.soramitsu.iroha.java.Transaction
-import jp.co.soramitsu.iroha.java.TransactionBuilder
 import jp.co.soramitsu.iroha.testcontainers.detail.GenesisBlockBuilder
 import mu.KLogging
 import org.junit.Test
@@ -17,11 +18,8 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import kotlin.test.assertTrue
-import java.security.KeyPair
-import jp.co.soramitsu.crypto.ed25519.Ed25519Sha3
 import java.math.BigDecimal
-import com.google.protobuf.util.JsonFormat;
+import kotlin.test.assertTrue
 
 
 @RunWith(SpringRunner::class)
@@ -39,7 +37,7 @@ class IrohaRestTest {
     @Throws(Exception::class)
     fun keyPairTest() {
         val result: MvcResult = mvc
-            .perform(get("/iroha/generateKeyPair"))
+            .perform(get("/iroha/getKeyPair"))
             .andExpect(status().isOk)
             .andReturn()
         val respBody = result.response.contentAsString

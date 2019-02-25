@@ -43,10 +43,6 @@ dependencies {
 
     implementation "org.springframework.boot:spring-boot-starter-jetty:$springBootVersion"
 
-    implementation("org.springframework.boot:spring-boot-starter-actuator:$springBootVersion") {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
-
     implementation "commons-logging:commons-logging:1.2"
     implementation('com.github.warchant:testcontainers-iroha:0.2.1') {
         exclude group: 'org.slf4j'
