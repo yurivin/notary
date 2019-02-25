@@ -51,7 +51,7 @@ dependencies {
     implementation('com.github.warchant:testcontainers-iroha:0.2.1') {
         exclude group: 'org.slf4j'
     }
-
+    compile 'com.google.protobuf:protobuf-java-util:3.6.1'
     testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
 
 }
