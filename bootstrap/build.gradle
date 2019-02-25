@@ -1,0 +1,65 @@
+group 'd3'
+version '1.0'
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        //Spring-boot
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:$spring_boot_version"
+    }
+}
+
+apply plugin: 'application'
+apply plugin: "kotlin-spring" // See https://kotlinlang.org/docs/reference/compiler-plugins.html#kotlin-spring-compiler-plugin
+apply plugin: 'com.github.johnrengelman.shadow'
+mainClassName = "jp.co.soramitsu.notary.bootstrap.BootstrapMain"
+
+dependencies {
+
+    def springfoxSwagger2Version = '2.9.2'
+    def springBootVersion = '2.1.3.RELEASE'
+
+    implementation project(":notary-commons")
+
+    //Spring-boot
+    implementation("org.springframework.boot:spring-boot-starter:$springBootVersion") {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+    implementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion") {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        exclude group: 'org.hibernate'
+    }
+    implementation "io.springfox:springfox-swagger2:$springfoxSwagger2Version"
+
+    //TODO this is very dirty hack. This dependency must be removed after migration to newer version of Spring Boot
+    // https://mvnrepository.com/artifact/org.hibernate/hibernate-validator
+    implementation group: 'org.hibernate', name: 'hibernate-validator', version: '6.0.14.Final'
+
+    implementation "org.springframework.boot:spring-boot-starter-jetty:$springBootVersion"
+
+    implementation("org.springframework.boot:spring-boot-starter-actuator:$springBootVersion") {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+
+    implementation "commons-logging:commons-logging:1.2"
+    testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+
+}
+
+sourceCompatibility = 1.8
+
+task runBootstrap(type: JavaExec ) {
+    main = 'jp.co.soramitsu.notary.bootstrap.BootstrapMain'
+    classpath = sourceSets.main.runtimeClasspath
+    setWorkingDir("$rootDir/")
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "notary:bootstrap"
+    }
+}
