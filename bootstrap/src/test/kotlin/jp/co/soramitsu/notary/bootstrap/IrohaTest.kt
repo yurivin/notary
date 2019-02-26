@@ -25,10 +25,9 @@ import kotlin.test.assertTrue
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class IrohaRestTest {
+class IrohaTest {
 
     private val log = KLogging().logger
-    private val jsoner:ObjectMapper = ObjectMapper()
 
     @Autowired
     lateinit var mvc: MockMvc
@@ -37,7 +36,7 @@ class IrohaRestTest {
     @Throws(Exception::class)
     fun keyPairTest() {
         val result: MvcResult = mvc
-            .perform(get("/iroha/getKeyPair"))
+            .perform(get("/iroha/create/keyPair"))
             .andExpect(status().isOk)
             .andReturn()
         val respBody = result.response.contentAsString

@@ -3,3 +3,26 @@
 ## API documentation
 'http://localhost:8080/v2/api-docs'
 In Firefox json is more readable, so try to use it.
+
+val seedCode = "yard impulse luxury drive today throw farm pepper survey wreck glass federal"
+
+Address: 0x72445fcfdeb1fff79496d7ce66089d663ff90e26
+Address: 0x6fc8a5794b4d9421c54721b84f0e38f0ecc20845
+Address: 0x74416ff82de8f16bf8285d2f3f1f325257bd2970
+
+Private: f9c8a5d689736d881cf9b4117bbae6d935b2368f8260a25677e35d4d1eea7231
+Public: 8390676e3458b6043e05b18ec9b5b680b9dcb86a74858c3b0a7611f9ec492f5e44899e7e2fbd15e10b6159dbc406499f462727f2c0c724479dbbf5c6dbaddc6
+
+val seedCode = "yard impulse luxury trive today throw farm pepper survey wreck glass federal"
+
+Address: 0x6fc8a5794b4d9421c54721b84f0e38f0ecc20845
+Private: 3489ffe20b2f56a4820bb75e34f23d5090238e0fb5c92a1e18547dc44cd2b3ee
+Public: 86ceb60a8e1ae9d8def8a0a5c59c02e47d25ebd85a138492a49964764274eddb2332122e91dfc78e42a63e06799a766ffc6498c608a0ccb741bba21d92acae70
+
+val seedCode = "yard impulse luxury trive today throw farm pepper glady survey wreck glass federal"
+
+Address: 0x74416ff82de8f16bf8285d2f3f1f325257bd2970
+Private: 3a35d531499c390f43728643340d8f5a239673623f377409e4c2add139039308
+Public: 38d6bc3f9fd5ed898cd43300cff1a547eeaf8d5954ccce65857d9254375b72ab668dec8af0857ea2725cb6113790506a20a2228e1b0b078536f2070bdf839aee
+
+

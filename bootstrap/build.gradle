@@ -48,6 +48,9 @@ dependencies {
         exclude group: 'org.slf4j'
     }
     compile 'com.google.protobuf:protobuf-java-util:3.6.1'
+    compile 'org.bitcoinj:bitcoinj-core:0.14.7'
+    compile 'org.web3j:crypto:4.0.4'
+    
     testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
 
 }

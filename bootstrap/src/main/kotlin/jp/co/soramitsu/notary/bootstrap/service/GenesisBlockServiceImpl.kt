@@ -6,10 +6,10 @@ import iroha.protocol.Primitive
 import jp.co.soramitsu.crypto.ed25519.Ed25519Sha3
 import jp.co.soramitsu.iroha.java.Transaction
 import jp.co.soramitsu.iroha.testcontainers.detail.GenesisBlockBuilder
-import jp.co.soramitsu.notary.bootstrap.dto.Account
-import jp.co.soramitsu.notary.bootstrap.dto.Domain
+import jp.co.soramitsu.notary.bootstrap.dto.IrohaAccount
 import jp.co.soramitsu.notary.bootstrap.dto.GenesisData
 import java.math.BigDecimal
+import java.security.KeyPair
 
 class GenesisBlockServiceImpl : GenesisBlockService {
 
@@ -21,14 +21,14 @@ class GenesisBlockServiceImpl : GenesisBlockService {
     private val peerKeypair = crypto.generateKeypair()
 
     private fun user(name: String): String {
-        return String.format("%s@%s", name, Domain.bank.name)
+        return String.format("%s@%s", name, "bank")
     }
 
-    private val usd = String.format("%s#%s", usdName, Domain.bank.name)
+    private val usd = String.format("%s#%s", usdName, "bank")
 
     override fun getGenericData(): GenesisData {
-        val accountA = Account("AccountA", crypto.generateKeypair(), Domain.bank)
-        val accountB = Account("AccountB", crypto.generateKeypair(), Domain.bank)
+        val accountA = IrohaAccount("AccountA", "bank", hashSetOf(crypto.generateKeypair()))
+        val accountB = IrohaAccount("AccountB", "bank", hashSetOf(crypto.generateKeypair()))
 
 
         val block: BlockOuterClass.Block = GenesisBlockBuilder()
@@ -48,13 +48,13 @@ class GenesisBlockServiceImpl : GenesisBlockService {
                             Primitive.RolePermission.can_receive
                         )
                     )
-                    .createDomain(Domain.bank.name, userRole)
+                    .createDomain("bank", userRole)
                     // create user A
-                    .createAccount(accountA.title, Domain.bank.name, accountA.keys.public)
+                    .createAccount(accountA.title, "bank", accountA.keys.iterator().next().public)
                     // create user B
-                    .createAccount(accountB.title, Domain.bank.name, accountB.keys.public)
+                    .createAccount(accountB.title, "bank", accountB.keys.iterator().next().public)
                     // create usd#bank with precision 2
-                    .createAsset(usdName, Domain.bank.name, 2)
+                    .createAsset(usdName, "bank", 2)
                     // transactions in genesis block can be unsigned
                     .build() // returns ipj model Transaction
                     .build() // returns unsigned protobuf Transaction
@@ -67,7 +67,7 @@ class GenesisBlockServiceImpl : GenesisBlockService {
                     .build()
             ).build()
         val json = JsonFormat.printer().print(block)
-        return GenesisData(json, listOf(accountA, accountB))
+        return GenesisData(json)
     }
 
 }
