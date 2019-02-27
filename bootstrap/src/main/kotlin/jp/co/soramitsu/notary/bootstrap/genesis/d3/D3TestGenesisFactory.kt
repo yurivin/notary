@@ -50,6 +50,19 @@ class D3TestGenesisFactory : GenesisInterface {
         if (accountErrors.isNotEmpty()) {
             throw AccountException(accountErrors.toString())
         }
+        D3TestContext.d3neededAccounts.forEach {
+            val accountDto = accountsMap[it.id]
+            if(accountDto  != null) {
+                if(!accountDto.creds.isEmpty())  {
+                    transactionBuilder.createAccount(it.title, it.domainId, getIrohaPublicKeyFromHexString(accountDto.creds.get(0).public))
+                } else {
+                    throw AccountException("Needed account keys are not received: ${it.id}")
+                }
+
+            } else {
+                throw AccountException("Needed account keys are not received: ${it.id}")
+            }
+        }
     }
 
     private fun checkNeendedAccountsGiven(accountsMap: HashMap<String, IrohaAccountDto>): List<String> {

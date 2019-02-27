@@ -54,8 +54,8 @@ class IrohaController(val genesisFactories: List<GenesisInterface>) {
 
         val keyPair = ModelUtil.generateKeypair()
         val response = BlockchainCreds(
-            DatatypeConverter.printHexBinary(keyPair.private.encoded),
-            DatatypeConverter.printHexBinary(keyPair.public.encoded)
+            DatatypeConverter.printBase64Binary(keyPair.private.encoded),
+            DatatypeConverter.printBase64Binary(keyPair.public.encoded)
         )
         return ResponseEntity.ok<BlockchainCreds>(response)
     }
@@ -71,7 +71,7 @@ class IrohaController(val genesisFactories: List<GenesisInterface>) {
         if (genesisFactory != null) {
             try {
                 genesis =
-                    GenesisData(genesisFactory?.createGenesisBlock(request.accounts, request.peers))
+                    GenesisData(genesisFactory.createGenesisBlock(request.accounts, request.peers))
             } catch (e: Exception) {
                 genesis = GenesisData()
                 genesis.errorCode = e.javaClass.simpleName

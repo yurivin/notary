@@ -18,15 +18,15 @@ data class BlockchainCreds(
 )
 
 data class IrohaAccountDto(
-    val title: String,
-    val domainId: String,
-    val creds: HashSet<BlockchainCreds>
+    val title: String = "",
+    val domainId: String = "",
+    val creds: List<BlockchainCreds> = listOf()
 )
 
 data class IrohaAccount(val title: String, val domain: String, val keys: HashSet<KeyPair>) :
     DtoFactory<IrohaAccountDto> {
     override fun getDTO(): IrohaAccountDto {
-        val credsList: HashSet<BlockchainCreds> = HashSet()
+        val credsList: ArrayList<BlockchainCreds> = ArrayList()
         keys.forEach {
             credsList.add(
                 BlockchainCreds(
@@ -73,17 +73,17 @@ class PassiveAccountPrototype(
 
 
 open class AccountPrototype(
-    val name: String,
+    val title: String,
     val domainId: String,
     private val roles: List<String> = listOf(),
     private val details: Map<String, String> = mapOf(),
     val passive:Boolean = false,
     val quorum:Int = 1
 ) {
-    val id = "$name@$domainId"
+    val id = "$title@$domainId"
 
     open fun createAccount(builder: TransactionBuilder, publicKey: String = "0000000000000000000000000000000000000000000000000000000000000000") {
-        builder.createAccount(name, domainId, getIrohaPublicKeyFromHexString(publicKey))
+        builder.createAccount(title, domainId, getIrohaPublicKeyFromHexString(publicKey))
         roles.forEach { builder.appendRole(id, it) }
         details.forEach { k, v -> builder.setAccountDetail(id,k,v) }
     }

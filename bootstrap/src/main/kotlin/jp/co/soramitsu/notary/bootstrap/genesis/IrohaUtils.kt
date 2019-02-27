@@ -4,12 +4,16 @@ import jp.co.soramitsu.crypto.ed25519.Ed25519Sha3
 import jp.co.soramitsu.iroha.java.TransactionBuilder
 import jp.co.soramitsu.notary.bootstrap.dto.Peer
 import jp.co.soramitsu.notary.bootstrap.error.IrohaPublicKeyError
+import java.lang.NullPointerException
 import java.security.PublicKey
 import javax.xml.bind.DatatypeConverter
 
-fun getIrohaPublicKeyFromHexString(hex: String): PublicKey {
+fun getIrohaPublicKeyFromHexString(hex: String?): PublicKey {
     try {
-        return Ed25519Sha3.publicKeyFromBytes(DatatypeConverter.parseHexBinary(hex))
+        if(hex == null) {
+            throw NullPointerException("Public key string should be not null")
+        }
+        return Ed25519Sha3.publicKeyFromBytes(DatatypeConverter.parseBase64Binary(hex))
     } catch(e:Exception) {
         throw IrohaPublicKeyError("${e.javaClass}:${e.message}")
     }
