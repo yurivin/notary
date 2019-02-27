@@ -48,3 +48,4 @@ data class GenesisRequest(
 )
 
 data class GenesisData(val blockData: String? = null) : Conflicatable()
+data class IrohaNeededAccountsResponse(val id:String, val quorum:Int)

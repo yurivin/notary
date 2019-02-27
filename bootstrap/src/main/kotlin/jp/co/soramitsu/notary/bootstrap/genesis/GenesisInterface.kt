@@ -8,4 +8,5 @@ interface GenesisInterface {
     fun getProject(): String
     fun getEnvironment(): String
     fun createGenesisBlock(accounts:List<IrohaAccountDto>, peers:List<Peer>, blockVersion:String = "1"): String
+    fun getAccountsNeeded(): List<AccountPrototype>
 }

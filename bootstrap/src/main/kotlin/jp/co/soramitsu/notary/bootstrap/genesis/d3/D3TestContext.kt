@@ -6,7 +6,7 @@ import jp.co.soramitsu.iroha.java.TransactionBuilder
 import jp.co.soramitsu.iroha.testcontainers.detail.GenesisBlockBuilder
 import jp.co.soramitsu.notary.bootstrap.genesis.AccountPrototype
 import jp.co.soramitsu.notary.bootstrap.genesis.PassiveAccountPrototype
-object D3Context {
+object D3TestContext {
     val d3neededAccounts = listOf<AccountPrototype>(
         AccountPrototype("notary", "notary", listOf("notary")),
         AccountPrototype(

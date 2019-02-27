@@ -1,4 +1,4 @@
-package jp.co.soramitsu.notary.bootstrap
+package jp.co.soramitsu.notary.bootstrap.research
 
 import mu.KLogging
 import org.bitcoinj.crypto.HDUtils
@@ -6,14 +6,8 @@ import org.bitcoinj.wallet.DeterministicKeyChain
 import org.bitcoinj.wallet.DeterministicSeed
 import org.junit.Test
 import org.web3j.crypto.Credentials
-import org.bitcoinj.crypto.MnemonicCode
-import org.bitcoinj.crypto.MnemonicException.MnemonicChecksumException
-import org.bitcoinj.crypto.MnemonicException.MnemonicWordException
-import org.bitcoinj.crypto.MnemonicException.MnemonicLengthException
 
-
-
-class EthereumTest {
+class EthResearch {
 
     private val log = KLogging().logger
 

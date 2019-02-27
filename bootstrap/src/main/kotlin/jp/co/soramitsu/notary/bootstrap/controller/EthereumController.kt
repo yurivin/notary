@@ -17,7 +17,7 @@ class EthereumController {
 
     private val log = KLogging().logger
 
-    @GetMapping("/create/address")
+  //  @GetMapping("/create/address")
     fun generateGenericBlock(): ResponseEntity<jp.co.soramitsu.notary.bootstrap.dto.BlockchainCreds> {
         log.info("Request of ethereun creds")
 

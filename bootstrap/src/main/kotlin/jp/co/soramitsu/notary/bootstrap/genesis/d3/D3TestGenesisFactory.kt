@@ -1,7 +1,6 @@
 package jp.co.soramitsu.notary.bootstrap.genesis.d3
 
 import com.google.protobuf.util.JsonFormat
-import com.sun.javaws.exceptions.InvalidArgumentException
 import jp.co.soramitsu.iroha.java.Transaction
 import jp.co.soramitsu.iroha.java.TransactionBuilder
 import jp.co.soramitsu.iroha.testcontainers.detail.GenesisBlockBuilder
@@ -11,6 +10,7 @@ import jp.co.soramitsu.notary.bootstrap.error.AccountException
 import jp.co.soramitsu.notary.bootstrap.genesis.*
 
 class D3TestGenesisFactory : GenesisInterface {
+    override fun getAccountsNeeded(): List<AccountPrototype> = D3TestContext.d3neededAccounts
 
     override fun getProject(): String {
         return "D3"
@@ -53,7 +53,7 @@ class D3TestGenesisFactory : GenesisInterface {
 
     private fun checkNeendedAccountsGiven(accountsMap: HashMap<String, IrohaAccountDto>): List<String> {
         val loosed = ArrayList<String>()
-        D3Context.d3neededAccounts.forEach {
+        D3TestContext.d3neededAccounts.forEach {
             if (!accountsMap.containsKey(it.id)) {
                 loosed.add("Needed account keys are not received: ${it.id}")
             }
@@ -80,21 +80,23 @@ class D3TestGenesisFactory : GenesisInterface {
 
 
     private fun createRoles(builder: TransactionBuilder) {
-        D3Context.createNotaryRole(builder)
-        D3Context.createRelayDeployerRole(builder)
-        D3Context.createEthTokenListStorageRole(builder)
-        D3Context.createRegistrationServiceRole(builder)
-        D3Context.createClientRole(builder)
-        D3Context.createWithdrawalRole(builder)
-        D3Context.createSignatureCollectorRole(builder)
-        D3Context.createVacuumerRole(builder)
-        D3Context.createNoneRole(builder)
-        D3Context.createTesterRole(builder)
-        D3Context.createWhiteListSetterRole(builder)
-        D3Context.createRollBackRole(builder)
-        D3Context.createNotaryListHolderRole(builder)
-        D3Context.createSoraClientRole(builder)
-        D3Context.createBtcFeeRateSetterRole(builder)
+        D3TestContext.createNotaryRole(builder)
+        D3TestContext.createRelayDeployerRole(builder)
+        D3TestContext.createEthTokenListStorageRole(builder)
+        D3TestContext.createRegistrationServiceRole(builder)
+        D3TestContext.createClientRole(builder)
+        D3TestContext.createWithdrawalRole(builder)
+        D3TestContext.createSignatureCollectorRole(builder)
+        D3TestContext.createVacuumerRole(builder)
+        D3TestContext.createNoneRole(builder)
+        D3TestContext.createTesterRole(builder)
+        D3TestContext.createWhiteListSetterRole(builder)
+        D3TestContext.createRollBackRole(builder)
+        D3TestContext.createNotaryListHolderRole(builder)
+        D3TestContext.createSoraClientRole(builder)
+        D3TestContext.createBtcFeeRateSetterRole(builder)
     }
 
 }
+
+

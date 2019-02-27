@@ -49,11 +49,12 @@ fun createPeers(
 }
 
 class PassiveAccountPrototype(
-    private val name: String,
-    private val domainId: String,
-    private val roles: List<String> = listOf(),
-    private val details: HashMap<String, String> = HashMap()
-    ) : AccountPrototype(name,domainId,passive = true) {
+    name: String,
+    domainId: String,
+    roles: List<String> = listOf(),
+    details: HashMap<String, String> = HashMap(),
+    quorum:Int = 1
+    ) : AccountPrototype(name,domainId,roles,details,passive = true,quorum = quorum) {
 
     fun createAccount(builder: TransactionBuilder) {
         createAccount(builder)
@@ -69,13 +70,15 @@ class PassiveAccountPrototype(
 
 
 open class AccountPrototype(
-    private val name: String,
-    private val domainId: String,
-    private val roles: List<String> = ArrayList(),
-    private val details: HashMap<String, String> = HashMap(),
-    val passive:Boolean = false
+    val name: String,
+    val domainId: String,
+    private val roles: List<String> = listOf(),
+    private val details: Map<String, String> = mapOf(),
+    val passive:Boolean = false,
+    val quorum:Int = 1
 ) {
     val id = "$name@$domainId"
+
     open fun createAccount(builder: TransactionBuilder, publicKey: String = "0000000000000000000000000000000000000000000000000000000000000000") {
         builder.createAccount(name, domainId, getIrohaPublicKeyFromHexString(publicKey))
         roles.forEach { builder.appendRole(id, it) }
