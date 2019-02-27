@@ -74,9 +74,8 @@ class IrohaController(val genesisFactories: List<GenesisInterface>) {
                     GenesisData(genesisFactory?.createGenesisBlock(request.accounts, request.peers))
             } catch (e: Exception) {
                 genesis = GenesisData()
-                genesis.errorCode = "ACCOUNT_ERROR"
-                genesis.message =
-                    "Some needed accounts where not found for project:${request.meta.project} environment:${request.meta.environment}: ${e.message}"
+                genesis.errorCode = e.javaClass.simpleName
+                genesis.message = "Error happened for project:${request.meta.project} environment:${request.meta.environment}: ${e.message}"
             }
         } else {
             genesis = GenesisData()

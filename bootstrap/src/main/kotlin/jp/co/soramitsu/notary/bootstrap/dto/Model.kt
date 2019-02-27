@@ -39,12 +39,12 @@ data class IrohaAccount(val title: String, val domain: String, val keys: HashSet
     }
 }
 
-data class Peer(val peerKey: String, val hostPort: String)
+data class Peer(val peerKey: String = "", val hostPort: String = "localhost:10001")
 data class Project(val project: String = "D3", val environment: String = "test")
 
 data class GenesisRequest(
-    val accounts: List<IrohaAccountDto>,
-    val peers: List<Peer>,
+    val accounts: List<IrohaAccountDto> = listOf(),
+    val peers: List<Peer> = listOf(),
     val blockVersion: String = "1",
     val meta: Project = Project()
 )

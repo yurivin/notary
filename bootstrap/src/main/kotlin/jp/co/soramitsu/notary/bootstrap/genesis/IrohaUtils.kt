@@ -3,11 +3,16 @@ package jp.co.soramitsu.notary.bootstrap.genesis
 import jp.co.soramitsu.crypto.ed25519.Ed25519Sha3
 import jp.co.soramitsu.iroha.java.TransactionBuilder
 import jp.co.soramitsu.notary.bootstrap.dto.Peer
+import jp.co.soramitsu.notary.bootstrap.error.IrohaPublicKeyError
 import java.security.PublicKey
 import javax.xml.bind.DatatypeConverter
 
 fun getIrohaPublicKeyFromHexString(hex: String): PublicKey {
-    return Ed25519Sha3.publicKeyFromBytes(DatatypeConverter.parseHexBinary(hex))
+    try {
+        return Ed25519Sha3.publicKeyFromBytes(DatatypeConverter.parseHexBinary(hex))
+    } catch(e:Exception) {
+        throw IrohaPublicKeyError("${e.javaClass}:${e.message}")
+    }
 }
 
 
