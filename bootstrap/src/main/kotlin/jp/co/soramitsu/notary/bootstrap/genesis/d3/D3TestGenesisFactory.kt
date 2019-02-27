@@ -20,7 +20,11 @@ class D3TestGenesisFactory : GenesisInterface {
         return "test"
     }
 
-    override fun createGenesisBlock(accounts: List<IrohaAccountDto>, peers: List<Peer>, blockVersion: String): String {
+    override fun createGenesisBlock(
+        accounts: List<IrohaAccountDto>,
+        peers: List<Peer>,
+        blockVersion: String
+    ): String {
         val transactionBuilder = Transaction.builder(null)
 
         createPeers(peers, transactionBuilder)
@@ -34,20 +38,23 @@ class D3TestGenesisFactory : GenesisInterface {
         return JsonFormat.printer().print(block)
     }
 
-    private fun createAccounts(transactionBuilder: TransactionBuilder, accountsList:List<IrohaAccountDto>) {
-        val accountsMap:HashMap<String, IrohaAccountDto> = HashMap()
+    private fun createAccounts(
+        transactionBuilder: TransactionBuilder,
+        accountsList: List<IrohaAccountDto>
+    ) {
+        val accountsMap: HashMap<String, IrohaAccountDto> = HashMap()
         accountsList.forEach { accountsMap.putIfAbsent("${it.title}@${it.domainId}", it) }
 
         val accountErrors = checkNeendedAccountsGiven(accountsMap)
-        if(accountErrors.isNotEmpty()) {
+        if (accountErrors.isNotEmpty()) {
             throw AccountException(accountErrors.toString())
         }
     }
 
-    private fun checkNeendedAccountsGiven(accountsMap: HashMap<String, IrohaAccountDto>):List<String> {
+    private fun checkNeendedAccountsGiven(accountsMap: HashMap<String, IrohaAccountDto>): List<String> {
         val loosed = ArrayList<String>()
         D3Context.d3neededAccounts.forEach {
-            if(!accountsMap.containsKey(it.id)) {
+            if (!accountsMap.containsKey(it.id)) {
                 loosed.add("Needed account keys are not received: ${it.id}")
             }
         }

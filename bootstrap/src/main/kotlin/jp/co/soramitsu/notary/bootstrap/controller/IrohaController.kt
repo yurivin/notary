@@ -16,6 +16,17 @@ class IrohaController(val genesisFactories: List<GenesisInterface>) {
 
     private val log = KLogging().logger
 
+    @GetMapping("/get/projects")
+    fun getProjects():ResponseEntity<Map<String,String>> {
+        val response = HashMap<String,String>()
+        genesisFactories.forEach {
+            response.putIfAbsent(it.getProject(),"")
+            var value = response.get(it.getProject())
+            response.put(it.getProject(), if(value!!.contentEquals("")) it.getEnvironment() else "$value:${it.getEnvironment()}")
+        }
+        return ResponseEntity.ok<Map<String,String>>(response)
+    }
+
     @GetMapping("/create/keyPair")
     fun generateBankAccount(): ResponseEntity<BlockchainCreds> {
         log.info("Request to generate KeyPair")
