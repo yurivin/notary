@@ -4,7 +4,6 @@ import jp.co.soramitsu.notary.bootstrap.dto.GenesisData
 import jp.co.soramitsu.notary.bootstrap.dto.BlockchainCreds
 import jp.co.soramitsu.notary.bootstrap.dto.GenesisRequest
 import jp.co.soramitsu.notary.bootstrap.genesis.GenesisInterface
-import jp.co.soramitsu.notary.bootstrap.service.GenesisBlockService
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -13,7 +12,7 @@ import javax.xml.bind.DatatypeConverter
 
 @RestController
 @RequestMapping("/iroha")
-class IrohaController(val blockService: GenesisBlockService, val genesisFactories: List<GenesisInterface>) {
+class IrohaController(val genesisFactories: List<GenesisInterface>) {
 
     private val log = KLogging().logger
 
@@ -31,12 +30,19 @@ class IrohaController(val blockService: GenesisBlockService, val genesisFactorie
         log.info("Request of genesis block")
         val genesisFactory = genesisFactories.filter { it.getProject().contentEquals(request.meta.project)
                 && it.getEnvironment().contentEquals(request.meta.environment)}.firstOrNull()
-        val genesis:GenesisData
+        var genesis:GenesisData
         if(genesisFactory != null) {
-            genesis = GenesisData(genesisFactory?.createGenesisBlock(request.accounts, request.peers))
+            try {
+                genesis =
+                    GenesisData(genesisFactory?.createGenesisBlock(request.accounts, request.peers))
+            } catch (e:Exception) {
+                genesis = GenesisData()
+                genesis.errorCode = "ACCOUNT_ERROR"
+                genesis.message = "Some needed accounts where not found for project:${request.meta.project} environment:${request.meta.environment}: ${e.message}"
+            }
         } else {
             genesis = GenesisData()
-            genesis.errorCode = 1
+            genesis.errorCode = "NO_GENESIS_FACTORY"
             genesis.message = "Genesis factory not found for project:${request.meta.project} environment:${request.meta.environment}"
         }
         return ResponseEntity.ok<GenesisData>(genesis)

@@ -7,7 +7,7 @@ private interface DtoFactory<out T> {
     fun getDTO(): T
 }
 
-open class Conflicatable(var errorCode:Int? = null, var message:String? = null)
+open class Conflicatable(var errorCode:String? = null, var message:String? = null)
 
 data class BlockchainCreds(val private:String? = null, val public:String? = null, val address:String? = null)
 data class IrohaAccountDto(val title:String, val domainId:String, val creds: HashSet<BlockchainCreds>)
