@@ -1,5 +1,6 @@
 package jp.co.soramitsu.notary.bootstrap.genesis
 
+import jp.co.soramitsu.notary.bootstrap.dto.AccountPrototype
 import jp.co.soramitsu.notary.bootstrap.dto.IrohaAccountDto
 import jp.co.soramitsu.notary.bootstrap.dto.Peer
 

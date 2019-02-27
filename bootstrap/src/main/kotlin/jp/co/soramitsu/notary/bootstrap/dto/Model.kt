@@ -1,5 +1,7 @@
 package jp.co.soramitsu.notary.bootstrap.dto
 
+import jp.co.soramitsu.iroha.java.TransactionBuilder
+import jp.co.soramitsu.notary.bootstrap.genesis.getIrohaPublicKeyFromHexString
 import java.security.KeyPair
 import javax.xml.bind.DatatypeConverter
 
@@ -48,4 +50,41 @@ data class GenesisRequest(
 )
 
 data class GenesisData(val blockData: String? = null) : Conflicatable()
-data class IrohaNeededAccountsResponse(val id:String, val quorum:Int)
+
+class PassiveAccountPrototype(
+    name: String,
+    domainId: String,
+    roles: List<String> = listOf(),
+    details: HashMap<String, String> = HashMap(),
+    quorum:Int = 1
+) : AccountPrototype(name,domainId,roles,details,passive = true,quorum = quorum) {
+
+    fun createAccount(builder: TransactionBuilder) {
+        createAccount(builder)
+    }
+
+    override fun createAccount(
+        builder: TransactionBuilder,
+        publicKey: String
+    ) {
+        createAccount(builder)
+    }
+}
+
+
+open class AccountPrototype(
+    val name: String,
+    val domainId: String,
+    private val roles: List<String> = listOf(),
+    private val details: Map<String, String> = mapOf(),
+    val passive:Boolean = false,
+    val quorum:Int = 1
+) {
+    val id = "$name@$domainId"
+
+    open fun createAccount(builder: TransactionBuilder, publicKey: String = "0000000000000000000000000000000000000000000000000000000000000000") {
+        builder.createAccount(name, domainId, getIrohaPublicKeyFromHexString(publicKey))
+        roles.forEach { builder.appendRole(id, it) }
+        details.forEach { k, v -> builder.setAccountDetail(id,k,v) }
+    }
+}

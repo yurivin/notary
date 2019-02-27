@@ -1,11 +1,10 @@
 package jp.co.soramitsu.notary.bootstrap.genesis.d3
 
 import iroha.protocol.Primitive
-import jp.co.soramitsu.iroha.java.Transaction
 import jp.co.soramitsu.iroha.java.TransactionBuilder
-import jp.co.soramitsu.iroha.testcontainers.detail.GenesisBlockBuilder
-import jp.co.soramitsu.notary.bootstrap.genesis.AccountPrototype
-import jp.co.soramitsu.notary.bootstrap.genesis.PassiveAccountPrototype
+import jp.co.soramitsu.notary.bootstrap.dto.AccountPrototype
+import jp.co.soramitsu.notary.bootstrap.dto.PassiveAccountPrototype
+
 object D3TestContext {
     val d3neededAccounts = listOf<AccountPrototype>(
         AccountPrototype("notary", "notary", listOf("notary")),

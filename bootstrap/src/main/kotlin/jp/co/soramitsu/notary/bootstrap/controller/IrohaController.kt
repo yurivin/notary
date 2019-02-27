@@ -1,9 +1,6 @@
 package jp.co.soramitsu.notary.bootstrap.controller
 
-import jp.co.soramitsu.notary.bootstrap.dto.BlockchainCreds
-import jp.co.soramitsu.notary.bootstrap.dto.GenesisData
-import jp.co.soramitsu.notary.bootstrap.dto.GenesisRequest
-import jp.co.soramitsu.notary.bootstrap.dto.IrohaNeededAccountsResponse
+import jp.co.soramitsu.notary.bootstrap.dto.*
 import jp.co.soramitsu.notary.bootstrap.genesis.GenesisInterface
 import mu.KLogging
 import org.springframework.http.ResponseEntity
@@ -17,8 +14,8 @@ class IrohaController(val genesisFactories: List<GenesisInterface>) {
 
     private val log = KLogging().logger
 
-    @GetMapping("/prereq/accounts/{project}/{env}")
-    fun getNeededAccounts(@PathVariable("project") project: String, @PathVariable("env") env: String): ResponseEntity<List<IrohaNeededAccountsResponse>> {
+    @GetMapping("/config/accounts/{project}/{env}")
+    fun getNeededAccounts(@PathVariable("project") project: String, @PathVariable("env") env: String): ResponseEntity<List<AccountPrototype>> {
 
         var genesisInfo: GenesisInterface? = null
         for (gf in genesisFactories) {
@@ -26,15 +23,15 @@ class IrohaController(val genesisFactories: List<GenesisInterface>) {
                 genesisInfo = gf
             }
         }
-        val accounts = ArrayList<IrohaNeededAccountsResponse>()
+        val accounts = ArrayList<AccountPrototype>()
         if (genesisInfo != null) {
             genesisInfo.getAccountsNeeded().forEach {
                 if (!it.passive) {
-                    accounts.add(IrohaNeededAccountsResponse(it.id, it.quorum))
+                    accounts.add(it)
                 }
             }
         }
-        return ResponseEntity.ok<List<IrohaNeededAccountsResponse>>(accounts)
+        return ResponseEntity.ok<List<AccountPrototype>>(accounts)
     }
 
     @GetMapping("/projects/genesis")

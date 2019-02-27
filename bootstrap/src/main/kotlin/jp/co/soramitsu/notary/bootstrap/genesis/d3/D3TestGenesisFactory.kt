@@ -4,6 +4,7 @@ import com.google.protobuf.util.JsonFormat
 import jp.co.soramitsu.iroha.java.Transaction
 import jp.co.soramitsu.iroha.java.TransactionBuilder
 import jp.co.soramitsu.iroha.testcontainers.detail.GenesisBlockBuilder
+import jp.co.soramitsu.notary.bootstrap.dto.AccountPrototype
 import jp.co.soramitsu.notary.bootstrap.dto.IrohaAccountDto
 import jp.co.soramitsu.notary.bootstrap.dto.Peer
 import jp.co.soramitsu.notary.bootstrap.error.AccountException
