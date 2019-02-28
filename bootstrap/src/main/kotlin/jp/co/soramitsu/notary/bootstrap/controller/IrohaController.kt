@@ -1,11 +1,11 @@
 package jp.co.soramitsu.notary.bootstrap.controller
 
+import jp.co.soramitsu.crypto.ed25519.Ed25519Sha3
 import jp.co.soramitsu.notary.bootstrap.dto.*
 import jp.co.soramitsu.notary.bootstrap.genesis.GenesisInterface
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import sidechain.iroha.util.ModelUtil
 import javax.xml.bind.DatatypeConverter
 
 @RestController
@@ -52,7 +52,7 @@ class IrohaController(val genesisFactories: List<GenesisInterface>) {
     fun generateKeyPair(): ResponseEntity<BlockchainCreds> {
         log.info("Request to generate KeyPair")
 
-        val keyPair = ModelUtil.generateKeypair()
+        val keyPair = Ed25519Sha3().generateKeypair()
         val response = BlockchainCreds(
             DatatypeConverter.printBase64Binary(keyPair.private.encoded),
             DatatypeConverter.printBase64Binary(keyPair.public.encoded)

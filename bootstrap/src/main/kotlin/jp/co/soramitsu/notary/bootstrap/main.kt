@@ -2,7 +2,6 @@
 
 package jp.co.soramitsu.notary.bootstrap
 
-import config.getProfile
 import mu.KLogging
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -16,7 +15,6 @@ class BootstrapMain
 
     fun main(args: Array<String>) {
         val app = SpringApplication(BootstrapMain::class.java)
-        app.setAdditionalProfiles(getProfile())
         app.run(*args)
     }
 

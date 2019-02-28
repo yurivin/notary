@@ -1,10 +1,11 @@
 package jp.co.soramitsu.notary.bootstrap
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import jp.co.soramitsu.crypto.ed25519.Ed25519Sha3
 import jp.co.soramitsu.notary.bootstrap.dto.*
 import jp.co.soramitsu.notary.bootstrap.dto.block.GenesisBlock
 import jp.co.soramitsu.notary.bootstrap.genesis.d3.D3TestGenesisFactory
-import junit.framework.TestCase.fail
+import junit.framework.TestCase.*
 import mu.KLogging
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -18,7 +19,6 @@ import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import sidechain.iroha.util.ModelUtil
 import javax.xml.bind.DatatypeConverter
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -153,6 +153,6 @@ class IrohaTest {
     }
 
     private fun generatePublicKeyBase64() =
-        DatatypeConverter.printBase64Binary(ModelUtil.generateKeypair().public.encoded)
+        DatatypeConverter.printBase64Binary(Ed25519Sha3().generateKeypair().public.encoded)
 }
 
