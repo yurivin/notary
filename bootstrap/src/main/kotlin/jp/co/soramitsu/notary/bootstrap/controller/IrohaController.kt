@@ -49,7 +49,7 @@ class IrohaController(val genesisFactories: List<GenesisInterface>) {
     }
 
     @GetMapping("/create/keyPair")
-    fun generateBankAccount(): ResponseEntity<BlockchainCreds> {
+    fun generateKeyPair(): ResponseEntity<BlockchainCreds> {
         log.info("Request to generate KeyPair")
 
         val keyPair = ModelUtil.generateKeypair()
@@ -61,29 +61,29 @@ class IrohaController(val genesisFactories: List<GenesisInterface>) {
     }
 
     @PostMapping("/create/genesisBlock")
-    fun generateGenericBlock(@RequestBody request: GenesisRequest): ResponseEntity<GenesisData> {
+    fun generateGenericBlock(@RequestBody request: GenesisRequest): ResponseEntity<GenesisResponse> {
         log.info("Request of genesis block")
         val genesisFactory = genesisFactories.filter {
             it.getProject().contentEquals(request.meta.project)
                     && it.getEnvironment().contentEquals(request.meta.environment)
         }.firstOrNull()
-        var genesis: GenesisData
+        var genesis: GenesisResponse
         if (genesisFactory != null) {
             try {
                 genesis =
-                    GenesisData(genesisFactory.createGenesisBlock(request.accounts, request.peers))
+                    GenesisResponse(genesisFactory.createGenesisBlock(request.accounts, request.peers))
             } catch (e: Exception) {
-                genesis = GenesisData()
+                genesis = GenesisResponse()
                 genesis.errorCode = e.javaClass.simpleName
                 genesis.message = "Error happened for project:${request.meta.project} environment:${request.meta.environment}: ${e.message}"
             }
         } else {
-            genesis = GenesisData()
+            genesis = GenesisResponse()
             genesis.errorCode = "NO_GENESIS_FACTORY"
             genesis.message =
                 "Genesis factory not found for project:${request.meta.project} environment:${request.meta.environment}"
         }
-        return ResponseEntity.ok<GenesisData>(genesis)
+        return ResponseEntity.ok<GenesisResponse>(genesis)
     }
 }
 

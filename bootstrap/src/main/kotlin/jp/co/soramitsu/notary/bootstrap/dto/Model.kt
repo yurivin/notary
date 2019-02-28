@@ -49,7 +49,7 @@ data class GenesisRequest(
     val meta: Project = Project()
 )
 
-data class GenesisData(val blockData: String? = null) : Conflicatable()
+data class GenesisResponse(val blockData: String? = null) : Conflicatable()
 
 class PassiveAccountPrototype(
     name: String,

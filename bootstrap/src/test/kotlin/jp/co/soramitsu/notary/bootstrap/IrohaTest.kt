@@ -2,9 +2,10 @@ package jp.co.soramitsu.notary.bootstrap
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import jp.co.soramitsu.notary.bootstrap.dto.*
+import jp.co.soramitsu.notary.bootstrap.dto.block.GenesisBlock
 import jp.co.soramitsu.notary.bootstrap.genesis.d3.D3TestGenesisFactory
+import junit.framework.TestCase.fail
 import mu.KLogging
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import sidechain.iroha.util.ModelUtil
 import javax.xml.bind.DatatypeConverter
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 
@@ -75,8 +77,9 @@ class IrohaTest {
 
     @Test
     fun testGenesisBlock() {
-        val peerKey1 = generatePublicKeyHex()
-        val peerKey2 = generatePublicKeyHex()
+        val peerKey1 = generatePublicKeyBase64()
+        val peerKey2 = generatePublicKeyBase64()
+        val accounts = getAccounts()
 
         val result: MvcResult = mvc
             .perform(
@@ -87,26 +90,7 @@ class IrohaTest {
                                 Peer(peerKey1, "firstTHost:12435"),
                                 Peer(peerKey2, "secondTHost:987654")
                             ),
-                            accounts = listOf(
-                                createAccountDto("notary", "notary"),
-                                createAccountDto("registration_service", "notary"),
-                                createAccountDto("eth_registration_service", "notary"),
-                                createAccountDto("btc_registration_service", "notary"),
-                                createAccountDto("mst_btc_registration_service", "notary"),
-                                createAccountDto("eth_token_storage_service", "notary"),
-                                createAccountDto("withdrawal", "notary"),
-                                createAccountDto("btc_fee_rate", "notary"),
-                                createAccountDto("btc_withdrawal_service", "notary"),
-                                createAccountDto("btc_sign_collector", "notary"),
-                                createAccountDto("btc_change_addresses", "notary"),
-                                createAccountDto("test", "notary"),
-                                createAccountDto("vacuumer", "notary"),
-                                createAccountDto("notaries", "notary"),
-                                createAccountDto("nbtc_change_addresses", "notary"),
-                                createAccountDto("gen_btc_pk_trigger", "notary"),
-                                createAccountDto("admin", "notary"),
-                                createAccountDto("sora", "sora")
-                                )
+                            accounts = accounts
                         )
                     )
                 )
@@ -123,19 +107,52 @@ class IrohaTest {
         log.info("peerKey2:$peerKey2")
         assertTrue(respBody.contains(peerKey1))
         assertTrue(respBody.contains(peerKey2))
+        accounts.forEach {
+            val pubKey = it.creds.get(0).public
+            if(pubKey != null) {
+                assertTrue(respBody.contains(pubKey), "pubKey not exists in block when should for account ${it.title}@${it.domainId} pubKey:${it.creds[0].public}")
+            }  else {
+                fail("pubKey not set when should for account ${it.title}@${it.domainId}")
+            }
+        }
 
+        val genesisResponse = mapper.readValue(respBody, GenesisResponse::class.java)
+        assertNotNull(genesisResponse)
+        val genesisBlock = mapper.readValue(genesisResponse.blockData, GenesisBlock::class.java)
+        assertNotNull(genesisBlock)
+    }
 
+    private fun getAccounts(): List<IrohaAccountDto> {
+        return listOf(
+            createAccountDto("notary", "notary"),
+            createAccountDto("registration_service", "notary"),
+            createAccountDto("eth_registration_service", "notary"),
+            createAccountDto("btc_registration_service", "notary"),
+            createAccountDto("mst_btc_registration_service", "notary"),
+            createAccountDto("eth_token_storage_service", "notary"),
+            createAccountDto("withdrawal", "notary"),
+            createAccountDto("btc_fee_rate", "notary"),
+            createAccountDto("btc_withdrawal_service", "notary"),
+            createAccountDto("btc_sign_collector", "notary"),
+            createAccountDto("btc_change_addresses", "notary"),
+            createAccountDto("test", "notary"),
+            createAccountDto("vacuumer", "notary"),
+            createAccountDto("notaries", "notary"),
+            createAccountDto("gen_btc_pk_trigger", "notary"),
+            createAccountDto("admin", "notary"),
+            createAccountDto("sora", "sora")
+        )
     }
 
     private fun createAccountDto(title:String, domain:String): IrohaAccountDto {
         return IrohaAccountDto(
             title, domain, listOf(
-                BlockchainCreds(public = generatePublicKeyHex())
+                BlockchainCreds(public = generatePublicKeyBase64())
             )
         )
     }
 
-    private fun generatePublicKeyHex() =
+    private fun generatePublicKeyBase64() =
         DatatypeConverter.printBase64Binary(ModelUtil.generateKeypair().public.encoded)
 }
 

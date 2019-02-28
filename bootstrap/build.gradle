@@ -36,6 +36,7 @@ dependencies {
         exclude group: 'org.hibernate'
     }
     implementation "io.springfox:springfox-swagger2:$springfoxSwagger2Version"
+    implementation "io.springfox:springfox-swagger-ui:$springfoxSwagger2Version"
 
     //TODO this is very dirty hack. This dependency must be removed after migration to newer version of Spring Boot
     // https://mvnrepository.com/artifact/org.hibernate/hibernate-validator
